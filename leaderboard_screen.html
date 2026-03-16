@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Global Leaderboard Rankings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
+<div class="flex items-center p-4 justify-between bg-white dark:bg-[#15212d] border-b border-slate-200 dark:border-[#233648] sticky top-0 z-10">
+<a class="flex size-12 shrink-0 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<h2 class="text-lg font-bold leading-tight flex-1 text-center pr-12">Global Leaderboard</h2>
+</div>
+<div class="flex-1 overflow-y-auto pb-24">
+<div class="flex justify-center items-end gap-4 px-4 py-8 bg-gradient-to-b from-primary/10 to-transparent dark:from-primary/5">
+<div class="flex flex-col items-center gap-2 pb-4">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-16 w-16 border-4 border-slate-300 dark:border-slate-500" data-alt="Silver medal winner profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDb-ybrEXM4q5c4dvHeZ3S7d9QCYcSFav6MGTzDAMt1rkFxJM0eBdUimNxS76kLCrkSLpIAm1t-Rh8Tqfi3a3KPLXY9TOj2rBUi4z5dlGNDglZW7auHKjz9alUWOnAhi-pQhNTnnKwteHc7Yck-1ZKFwXOmNWNcv5agUyCMxznnbyjsJRCQ-xmgZ7HWkZx-kA8Gl-QkjHOh0BpRfyeN3qSitRLHa1RQwPCpveID0gC08ie0V2FLBHC7RksF0X3qAXeKQ8QKso8RBjBV");'></div>
+<div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-300 dark:bg-slate-500 text-slate-800 dark:text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">2</div>
+</div>
+<p class="font-medium text-sm mt-1">Sarah M.</p>
+<p class="text-primary font-bold text-sm">10,500 XP</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="relative">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-yellow-500">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-24 w-24 border-4 border-yellow-400 dark:border-yellow-500 shadow-lg shadow-yellow-500/20" data-alt="Gold medal winner profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfzV4GJEpXXkZmnSInGTmJ7eWUidPeXUkWfLCOuClbI8_OgI8zYLaC-Vdgnu_e84UeiM2Sg4T_XT7Hj9N1Y_egeVRdUIo5OPPfTDQk-pBhU1BJ70Zu5HTQoJQzW9emNm8S3ciHy7i6Hk8qJYBs471-CkjQasDVCFBnZdfk1mGhCZyRiSSTP-XSZoXp-F9XZaxQ8__bgk_ReLhIbDG8fcGSlP6zqyjS70etMkMRuJ01B_uNQ8TDGCOJc1avndo-sNIWYYIoSm_aKQyZ");'></div>
+<div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-yellow-400 dark:bg-yellow-500 text-yellow-900 dark:text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">1</div>
+</div>
+<p class="font-bold text-base mt-2">Alex D.</p>
+<p class="text-primary font-bold text-base">12,450 XP</p>
+</div>
+<div class="flex flex-col items-center gap-2 pb-8">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-14 w-14 border-4 border-amber-600 dark:border-amber-700" data-alt="Bronze medal winner profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCkscFBQFQpBCQ7EMYWKPfzJMrKNiab3cqIDbtklgoLfV9ep1QGNNxK0q_boQ5cv5ZHA2jkGDU_QulbKIFRW5U9W-8FUk8KxIfMtdSCfSwqvLV5DE5dA-ZlheG6XZxWTVYN-C2EwkrRRj8sTWJTf5P3s-YfgCxU8pQIbfW4TlD-2-KR4p-xpnHdWEeKCDQ_mgoRHDF62CwwbZrZrRsVoAevqwMXj8wdwiz6wfjc3BNIyzVdlWxTXC_2p9v2KBh5Ps5ImUcJAD6UsFP");'></div>
+<div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-amber-600 dark:bg-amber-700 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md">3</div>
+</div>
+<p class="font-medium text-sm mt-1">John K.</p>
+<p class="text-primary font-bold text-sm">9,800 XP</p>
+</div>
+</div>
+<div class="px-4 py-2">
+<div class="flex items-center gap-4 bg-primary/10 dark:bg-primary/20 border border-primary/30 p-4 rounded-xl mb-4 shadow-sm shadow-primary/5">
+<div class="w-6 text-center font-bold text-primary">42</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 border-2 border-primary" data-alt="Current user profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBBXM-Bkff2DchLwt3zREcnhpP9y7bXwSsMDJ7r2Ts9MIlj-_1SJnJoScjyaB8SLhcPa8tw-yGStAGlS55_7kZ9EgnmQf3xAvywJmT3YgrHxuws30pGnUa4gj6nlC73qbB1_ZDmDw1-9WLFlY8wmN6gTsuPBbJOqug5nFFl0abE1yt-GmT6cw-OROq6xMVdjVw2lEOCbaeX4lKwmMK980wUS8d0ypb0cJOgat8spRLfLxNDYFAyjsXOYGZjlfDowv3P5kY7x7tJUPN5");'></div>
+<div class="flex-1">
+<p class="font-bold text-base leading-tight">You</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Current Rank</p>
+</div>
+<div class="shrink-0 text-right">
+<p class="font-bold text-primary">3,200 XP</p>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-[#15212d] transition-colors">
+<div class="w-6 text-center font-medium text-slate-500 dark:text-slate-400">4</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 bg-slate-200 dark:bg-slate-700" data-alt="User profile picture rank 4" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAYdRUQV1qapKPFIWeMtXhyH2F-dOqPJeFvnm8Lu7JNtfxAbFaniDidSraRsoEy0or7mKWGPJZ_NuVM7e5h-6sdEGNQbYOceAQu5DlcHXmD_eUSHfTuzI0DDzjIwKC6eSN8k-GCl5imtGMZlHDGAOj6AmMG2CRIlZzR-zsW24lHkaOz8dxrk0yvum2_FkC4mIGGC7MStJ4ZDEbXxof-NJ2Qj6xdopQ-EpcMA-2ypS2IjmKmc1lAV8fm5mXVufZpFu7FB1pxEQkS7o-K");'></div>
+<p class="font-medium flex-1 truncate">Emily R.</p>
+<div class="shrink-0"><p class="font-medium text-slate-600 dark:text-slate-300">9,500 XP</p></div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-[#15212d] transition-colors">
+<div class="w-6 text-center font-medium text-slate-500 dark:text-slate-400">5</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 bg-slate-200 dark:bg-slate-700" data-alt="User profile picture rank 5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC_ZuJcXxwVyahHqt0Tn-A6lt52HbwiOJzjlY2XNqxSoA2SeCBbN5w5QT85uRD28JH7isoaLd1fw0ZZ-I3MGgJnoMN9IGlW2nut7hw0--95SqgIv7qpU7fIKUq3gmSjx2XfiO-udPkWBAQRytz4wI_BcjN1p08tH_-qIe8v1h-EQ7QLLcepPbPv1yraRJJXvqebj1CoclQ8Yw_YQDU2aQuVjFo2UouA1q9s70p0n_aOdVlSZWTp0WypMzjYrsGKp73ilPaC0cyi8XF2");'></div>
+<p class="font-medium flex-1 truncate">Michael T.</p>
+<div class="shrink-0"><p class="font-medium text-slate-600 dark:text-slate-300">9,200 XP</p></div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-[#15212d] transition-colors">
+<div class="w-6 text-center font-medium text-slate-500 dark:text-slate-400">6</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 bg-slate-200 dark:bg-slate-700" data-alt="User profile picture rank 6" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMWVuQigfUVFkUIy8OMezDey09OBvXeqhiXHkX7JM003dzY1KaMiH3QT7cdUD8SyibT3HbfQ5UygwGXWyQbElcK4ir3IqaCOOCXfFTCc5fmS0evYgdFx9LbwZUnfO_tsKyZ1qlYAD1zlNJFfVfn9kTeiGtXDPXbyKguv5CMWf4klrhOPWXTCZWvXBHiz8MZiNxZ070g4aPL8CLzGw7-A5MwEuDHaQ6UM0g05viZWgxywksDLJYIvA2qf6_0kW4CFhFzZBpsI6fk-UW");'></div>
+<p class="font-medium flex-1 truncate">Jessica L.</p>
+<div class="shrink-0"><p class="font-medium text-slate-600 dark:text-slate-300">8,950 XP</p></div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-[#15212d] transition-colors">
+<div class="w-6 text-center font-medium text-slate-500 dark:text-slate-400">7</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 bg-slate-200 dark:bg-slate-700" data-alt="User profile picture rank 7" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA1toqa-L2TP_Nc89AGZdvLyzj1CRyM4-YOuflOtF5ePP3lGbLhomR-euvrWKHS6qZKIU9DStmKKcYVtaB0pvhZj8AUfRLZUmp5v0uqrVvR5d0zatZKJ1_P8VXQi6LCekZUJHucDbODYtK1ccPS0Bl4Lm4WVAn4YmlVjmI-lK6UZebDWlfETiciNB-qNXoZAjL2sp3x3hmhctAFmzS4f7mekGsauyOGuNLCKulcWb-eI4WPyuiji6Ws9n46YQ5tptgsYuNLP7eRPCI0");'></div>
+<p class="font-medium flex-1 truncate">David W.</p>
+<div class="shrink-0"><p class="font-medium text-slate-600 dark:text-slate-300">8,700 XP</p></div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 flex gap-2 border-t border-slate-200 dark:border-[#233648] bg-white dark:bg-[#15212d] px-4 pb-6 pt-2 z-20">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-[#92adc9] hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">home</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-[#92adc9] hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">style</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Flashcards</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500 dark:text-[#92adc9] hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">quiz</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Quizzes</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Leaderboard</p>
+</a>
+</div>
+</body></html>

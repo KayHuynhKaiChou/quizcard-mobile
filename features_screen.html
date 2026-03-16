@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onboarding Quiz Features</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Lexend", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col items-center justify-center">
+<div class="relative flex h-auto min-h-[844px] w-full max-w-[390px] flex-col overflow-x-hidden bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Header -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined text-2xl">close</span>
+</div>
+<div class="flex w-12 items-center justify-end cursor-pointer">
+<p class="text-slate-500 dark:text-slate-400 text-base font-bold leading-normal tracking-[0.015em] shrink-0 hover:text-primary transition-colors">Skip</p>
+</div>
+</div>
+<!-- Illustration Area -->
+<div class="@container flex-1 flex flex-col justify-center">
+<div class="px-4 py-3">
+<div class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl min-h-[320px] shadow-lg relative" data-alt="Quiz cards and a glowing leaderboard graphic on a digital tablet screen" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMeScS1PHkhn8YVcEBZOhC6OFImOBSPrV9cvHYfggUwSrQlyHGlkOW46A0X8plgIZhCaYojx6kqWoKolgwLOz-VmW5gI_Nwo-MC1xBbD3_GAEQebqrBeVeH3NnXifMhdRVDD_EF7QiR7XEmUQ0q-TPcfCCsbRbKWmFmMAU1X_czozVD2Xa8RmnPJpenrq0IpTb9DIqX9ow6L_2_gTqPLXZjNkjfhcjxwbjNGiteUKpBVril9s3LH6ddYCzYX4c-bH2hgDanQ3jCb9d');">
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+</div>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-col items-center px-6 pb-8">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight text-center pb-3 pt-6">
+        Challenge Yourself
+      </h1>
+<p class="text-slate-600 dark:text-slate-300 text-base font-normal leading-relaxed pb-8 pt-1 text-center">
+        Test your knowledge with interactive quizzes and climb the global leaderboard to compete with others.
+      </p>
+<!-- Progress Dots -->
+<div class="flex w-full flex-row items-center justify-center gap-3 py-5">
+<div class="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+<div class="h-2 w-6 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 px-6 rounded-xl transition-colors shadow-md mt-4">
+        Next
+      </button>
+</div>
+</div>
+</body></html>

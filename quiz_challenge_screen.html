@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quiz Challenge Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col items-center">
+<div class="relative flex h-auto min-h-screen w-full max-w-md flex-col overflow-x-hidden bg-background-light dark:bg-background-dark shadow-2xl">
+<div class="flex items-center p-4 pb-2 justify-between">
+<button class="flex size-12 shrink-0 items-center text-slate-900 dark:text-slate-100 cursor-pointer">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Quiz Challenge</h2>
+</div>
+<div class="flex flex-col gap-3 p-4">
+<div class="flex gap-6 justify-between">
+<p class="text-base font-medium leading-normal">Question 13 of 20</p>
+</div>
+<div class="rounded-full bg-slate-200 dark:bg-slate-700 h-2">
+<div class="h-full rounded-full bg-primary" style="width: 65%;"></div>
+</div>
+</div>
+<div class="flex gap-4 py-4 px-4">
+<div class="flex grow basis-0 flex-col items-stretch gap-2">
+<div class="flex h-12 grow items-center justify-center rounded-lg px-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+<p class="text-lg font-bold leading-tight tracking-[-0.015em]">04</p>
+</div>
+<div class="flex items-center justify-center">
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">Mins</p>
+</div>
+</div>
+<div class="flex grow basis-0 flex-col items-stretch gap-2">
+<div class="flex h-12 grow items-center justify-center rounded-lg px-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+<p class="text-lg font-bold leading-tight tracking-[-0.015em] text-primary">30</p>
+</div>
+<div class="flex items-center justify-center">
+<p class="text-sm font-normal leading-normal text-slate-500 dark:text-slate-400">Secs</p>
+</div>
+</div>
+</div>
+<div class="px-4 py-6 flex-grow flex flex-col justify-center">
+<h2 class="tracking-tight text-[28px] font-bold leading-tight text-center pb-8">What is the term for a word that sounds like what it means?</h2>
+<div class="flex flex-col gap-3">
+<button class="flex items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-base font-bold leading-normal tracking-[0.015em] w-full transition-colors cursor-pointer">
+<span class="truncate">Alliteration</span>
+</button>
+<button class="flex items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-primary text-white border border-primary text-base font-bold leading-normal tracking-[0.015em] w-full shadow-lg shadow-primary/30 transition-colors cursor-pointer">
+<span class="truncate">Onomatopoeia</span>
+</button>
+<button class="flex items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-base font-bold leading-normal tracking-[0.015em] w-full transition-colors cursor-pointer">
+<span class="truncate">Simile</span>
+</button>
+<button class="flex items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-base font-bold leading-normal tracking-[0.015em] w-full transition-colors cursor-pointer">
+<span class="truncate">Metaphor</span>
+</button>
+</div>
+</div>
+<div class="p-4 mt-auto">
+<button class="w-full flex items-center justify-center h-12 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium cursor-pointer transition-colors">
+                Skip Question
+            </button>
+</div>
+</div>
+</body></html>

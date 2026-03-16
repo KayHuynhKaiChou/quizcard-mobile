@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<html class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deck Terms List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1a2634",
+            "border-light": "#e2e8f0",
+            "border-dark": "#2d3748",
+            "text-light": "#1e293b",
+            "text-dark": "#f8fafc",
+            "text-muted-light": "#64748b",
+            "text-muted-dark": "#94a3b8"
+          },
+          fontFamily: {
+            "display": ["Lexend"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Lexend', sans-serif;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark min-h-screen relative pb-24">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-surface-light dark:bg-background-dark">
+<!-- Top App Bar & Header -->
+<div class="flex flex-col gap-2 p-4 pb-2 sticky top-0 bg-surface-light/90 dark:bg-background-dark/90 backdrop-blur z-10 border-b border-border-light dark:border-border-dark">
+<div class="flex items-center h-12 justify-between">
+<button class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center hover:bg-slate-100 dark:hover:bg-surface-dark rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="text-text-light dark:text-text-dark flex size-12 shrink-0 items-center justify-center hover:bg-slate-100 dark:hover:bg-surface-dark rounded-full transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-text-light dark:text-text-dark tracking-tight text-3xl font-bold leading-tight mt-2">Medical Terminology</p>
+</div>
+<div class="px-4 py-4 space-y-4 border-b border-border-light dark:border-border-dark">
+<p class="text-text-light dark:text-text-dark text-base font-normal leading-relaxed">A comprehensive deck covering essential medical terms and definitions. Perfect for pre-med students and healthcare professionals.</p>
+<div class="flex items-center gap-4 text-text-muted-light dark:text-text-muted-dark text-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">style</span>
+<span>124 Cards</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">person</span>
+<span>Dr. Smith</span>
+</div>
+</div>
+</div>
+<!-- Terms List -->
+<h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-tight px-4 pb-2 pt-6">Terms</h3>
+<div class="flex flex-col divide-y divide-border-light dark:divide-border-dark">
+<!-- Term Item 1 -->
+<div class="flex items-start gap-4 px-4 min-h-[72px] py-4 justify-between hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal mb-1">Anatomy</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-relaxed line-clamp-2">The study of the structure of the human body and the relationship of its parts to each other.</p>
+</div>
+<button class="shrink-0 mt-1">
+<div class="text-primary flex size-8 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</button>
+</div>
+<!-- Term Item 2 -->
+<div class="flex items-start gap-4 px-4 min-h-[72px] py-4 justify-between hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal mb-1">Physiology</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-relaxed line-clamp-2">The study of the normal function of living organisms and their parts, including physical and chemical processes.</p>
+</div>
+<button class="shrink-0 mt-1">
+<div class="text-text-muted-light dark:text-text-muted-dark flex size-8 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">star</span>
+</div>
+</button>
+</div>
+<!-- Term Item 3 -->
+<div class="flex items-start gap-4 px-4 min-h-[72px] py-4 justify-between hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal mb-1">Pathology</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-relaxed line-clamp-2">The study of the causes and effects of disease or injury, focusing on changes in structure and function.</p>
+</div>
+<button class="shrink-0 mt-1">
+<div class="text-text-muted-light dark:text-text-muted-dark flex size-8 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">star</span>
+</div>
+</button>
+</div>
+<!-- Term Item 4 -->
+<div class="flex items-start gap-4 px-4 min-h-[72px] py-4 justify-between hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal mb-1">Pharmacology</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-relaxed line-clamp-2">The branch of medicine concerned with the uses, effects, and modes of action of drugs.</p>
+</div>
+<button class="shrink-0 mt-1">
+<div class="text-text-muted-light dark:text-text-muted-dark flex size-8 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">star</span>
+</div>
+</button>
+</div>
+<!-- Term Item 5 -->
+<div class="flex items-start gap-4 px-4 min-h-[72px] py-4 justify-between hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal mb-1">Histology</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-relaxed line-clamp-2">The microscopic study of the structure of tissues and cells.</p>
+</div>
+<button class="shrink-0 mt-1">
+<div class="text-primary flex size-8 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Spacing for FAB -->
+<div class="h-24"></div>
+<!-- Floating Action Button -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-20">
+<button class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
+<span class="material-symbols-outlined">play_arrow</span>
+<span>Start Studying</span>
+</button>
+</div>
+</div>
+</body></html>

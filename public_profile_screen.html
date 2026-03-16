@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Public Profile &amp; Decks</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#137fec",
+          "background-light": "#f6f7f8",
+          "background-dark": "#101922",
+          "surface-light": "#ffffff",
+          "surface-dark": "#192633",
+          "border-light": "#e2e8f0",
+          "border-dark": "#233648",
+          "text-muted-light": "#64748b",
+          "text-muted-dark": "#92adc9",
+        },
+        fontFamily: {
+          "display": ["Lexend", "sans-serif"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body {
+    font-family: 'Lexend', sans-serif;
+  }
+</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen pb-20 overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col @container">
+<!-- Header -->
+<header class="flex items-center p-4 pb-2 justify-between sticky top-0 bg-background-light dark:bg-background-dark z-10 border-b border-border-light dark:border-border-dark">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-surface-dark/10 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-slate-100">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight flex-1 text-center pr-10">Profile</h2>
+</header>
+<!-- Profile Info -->
+<section class="flex flex-col p-6 items-center border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark">
+<div class="flex gap-4 flex-col items-center mb-6">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-32 w-32 border-4 border-background-light dark:border-background-dark shadow-md" data-alt="Portrait of Alex Johnson" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBwgenvTOgRgrX82eEydbN3gozjs-aOc4iGtch3U0W9TguzpiPLNCHY7jwty8nniw-s19r2UJDU_rptqMXoUeRfGVaI9hF8SU67eOtVJzA5wnrBPcqIQtR7ZmBhhpNOocqPdT3pKfc5XqJejHDQjbiXJCCluQs9kobs5Fov6mt9oy4zMws6f9Wz7wQn1-FngR8Rhupx9V-U5dlq_OdzqJC3SUnnUcjrkpBJAfn-r2xsxw8tYGsPYrFPoGZaJGUjw3dDx90juCzBsiUz");'></div>
+<div class="flex flex-col items-center justify-center">
+<h1 class="text-2xl font-bold leading-tight tracking-[-0.015em] text-center mb-1">Alex Johnson</h1>
+<p class="text-text-muted-light dark:text-text-muted-dark text-base font-medium leading-normal text-center">Medical Student</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm font-normal leading-normal text-center mt-1">Joined in 2021</p>
+</div>
+</div>
+<div class="flex w-full max-w-[480px] gap-3">
+<button class="flex flex-1 cursor-pointer items-center justify-center rounded-lg h-11 px-4 bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors">
+<span class="truncate">Follow</span>
+</button>
+<button class="flex flex-1 cursor-pointer items-center justify-center rounded-lg h-11 px-4 bg-surface-dark/10 dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-900 dark:text-slate-100 text-sm font-bold shadow-sm hover:bg-surface-dark/20 dark:hover:bg-surface-dark/80 transition-colors">
+<span class="truncate">Message</span>
+</button>
+</div>
+</section>
+<!-- Stats Summary -->
+<section class="p-6 border-b border-border-light dark:border-border-dark">
+<h3 class="text-lg font-bold leading-tight mb-4">Top Achievements</h3>
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col gap-1 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-4 items-center text-center shadow-sm">
+<span class="material-symbols-outlined text-primary mb-1">menu_book</span>
+<p class="tracking-light text-2xl font-bold leading-tight">1.2k</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-xs font-medium leading-normal">Terms Learned</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-4 items-center text-center shadow-sm">
+<span class="material-symbols-outlined text-green-500 mb-1">emoji_events</span>
+<p class="tracking-light text-2xl font-bold leading-tight">45</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-xs font-medium leading-normal">Quizzes Won</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-4 items-center text-center shadow-sm">
+<span class="material-symbols-outlined text-purple-500 mb-1">style</span>
+<p class="tracking-light text-2xl font-bold leading-tight">300</p>
+<p class="text-text-muted-light dark:text-text-muted-dark text-xs font-medium leading-normal">Flashcards</p>
+</div>
+</div>
+</section>
+<!-- Public Decks -->
+<section class="p-6">
+<h3 class="text-lg font-bold leading-tight mb-4">Public Decks</h3>
+<div class="flex flex-col gap-4">
+<!-- Deck Item -->
+<div class="flex flex-col p-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="text-base font-bold mb-1">Anatomy 101</h4>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">style</span>
+              120 Terms
+            </p>
+</div>
+<button class="bg-primary/10 text-primary px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary/20 transition-colors">Study</button>
+</div>
+<div class="w-full bg-border-light dark:bg-border-dark rounded-full h-1.5 mb-1">
+<div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+<p class="text-xs text-text-muted-light dark:text-text-muted-dark text-right">45% mastered</p>
+</div>
+<!-- Deck Item -->
+<div class="flex flex-col p-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="text-base font-bold mb-1">Pharmacology Basics</h4>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">style</span>
+              85 Terms
+            </p>
+</div>
+<button class="bg-primary/10 text-primary px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary/20 transition-colors">Study</button>
+</div>
+<div class="w-full bg-border-light dark:bg-border-dark rounded-full h-1.5 mb-1">
+<div class="bg-primary h-1.5 rounded-full" style="width: 12%"></div>
+</div>
+<p class="text-xs text-text-muted-light dark:text-text-muted-dark text-right">12% mastered</p>
+</div>
+<!-- Deck Item -->
+<div class="flex flex-col p-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="text-base font-bold mb-1">Cardiology Definitions</h4>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">style</span>
+              50 Terms
+            </p>
+</div>
+<button class="bg-primary/10 text-primary px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary/20 transition-colors">Study</button>
+</div>
+<div class="w-full bg-border-light dark:bg-border-dark rounded-full h-1.5 mb-1">
+<div class="bg-primary h-1.5 rounded-full" style="width: 80%"></div>
+</div>
+<p class="text-xs text-text-muted-light dark:text-text-muted-dark text-right">80% mastered</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full flex gap-2 border-t border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark px-4 pb-6 pt-3 z-20">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted-light dark:text-text-muted-dark hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted-light dark:text-text-muted-dark hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Search</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-text-muted-light dark:text-text-muted-dark hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">add_circle</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Create</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-xs font-bold leading-normal tracking-[0.015em]">Profile</p>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile &amp; Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col group/design-root overflow-x-hidden max-w-md mx-auto bg-white dark:bg-background-dark shadow-xl">
+<!-- Header -->
+<div class="flex items-center p-4 pb-2 justify-between sticky top-0 z-10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
+<h2 class="text-xl font-bold leading-tight flex-1">Profile</h2>
+<div class="flex items-center gap-3 justify-end">
+<button aria-label="Notifications" class="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">notifications</span>
+</button>
+<button aria-label="Settings" class="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">settings</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- User Info -->
+<div class="flex p-6 flex-col gap-4 items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-28 w-28 border-4 border-primary/20 shadow-lg" data-alt="Portrait of Jane Doe smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCho5b1G7fhL7UJEri0J3IfJU3WAleagj6NTilBLx9j0h867sJCICVEmiDMLlstpJRwnqHeROBs0aqCwT6XDT3AJvYaFkPt-RX9Bu6YzAN4U5-rQFkqOkaj_X3UZIva-3HUOr_ZFe0ahMWENhPpi85dvULeyb6QigcJyogZF3RfA2sU-Y91V3NfFiQJq8xkg0-YHDvxgAeueQ4NbnObhOPn62fErsz_sEOHLq-mc7SRwu4OiBpTc3UMactmHlAqyxlgJHGdvyigM7Dq");'></div>
+<div class="absolute bottom-0 right-0 bg-primary text-white rounded-full h-8 w-8 flex items-center justify-center border-2 border-white dark:border-background-dark shadow-sm">
+<span class="material-symbols-outlined text-sm">edit</span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center text-center">
+<p class="text-2xl font-bold leading-tight">Jane Doe</p>
+<div class="flex items-center gap-1 mt-1 bg-primary/10 dark:bg-primary/20 text-primary px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm">school</span>
+<p class="text-sm font-medium">Level 5 Terminology Learner</p>
+</div>
+</div>
+</div>
+<!-- Key Stats -->
+<div class="flex flex-wrap gap-3 px-4 py-3">
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 items-center text-center shadow-sm">
+<p class="text-primary text-2xl font-bold leading-tight">24</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Quizzes</p>
+</div>
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 items-center text-center shadow-sm">
+<p class="text-primary text-2xl font-bold leading-tight">150</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Terms</p>
+</div>
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 items-center text-center shadow-sm">
+<div class="flex items-center gap-1 text-orange-500">
+<span class="material-symbols-outlined text-xl">local_fire_department</span>
+<p class="text-2xl font-bold leading-tight">7</p>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Day Streak</p>
+</div>
+</div>
+<!-- Achievement Badges -->
+<div class="px-4 py-4 mt-2">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold leading-tight">Achievements</h3>
+<a class="text-primary text-sm font-medium hover:underline" href="#">View All</a>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col items-center gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-900/30 text-center">
+<div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-800 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+<span class="material-symbols-outlined text-2xl">emoji_events</span>
+</div>
+<p class="text-xs font-semibold">Fast Learner</p>
+</div>
+<div class="flex flex-col items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 text-center">
+<div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-2xl">psychology</span>
+</div>
+<p class="text-xs font-semibold">Master Mind</p>
+</div>
+<div class="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-center opacity-60">
+<div class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
+<span class="material-symbols-outlined text-2xl">lock</span>
+</div>
+<p class="text-xs font-semibold">Vocabulary</p>
+</div>
+</div>
+</div>
+<!-- Learning Activity Chart Area -->
+<div class="px-4 py-4 mt-2">
+<h3 class="text-lg font-bold leading-tight mb-4">Learning Activity</h3>
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50 p-4 h-48 flex items-end gap-2 relative">
+<!-- Decorative subtle grid lines -->
+<div class="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-20 dark:opacity-10">
+<div class="border-t border-slate-400 w-full"></div>
+<div class="border-t border-slate-400 w-full"></div>
+<div class="border-t border-slate-400 w-full"></div>
+<div class="border-t border-slate-400 w-full"></div>
+</div>
+<!-- Chart Bars (Mockup) -->
+<div class="flex-1 bg-primary/30 hover:bg-primary transition-colors rounded-t-sm h-[30%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">12</span></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary transition-colors rounded-t-sm h-[50%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">25</span></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary transition-colors rounded-t-sm h-[80%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">40</span></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary transition-colors rounded-t-sm h-[45%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">22</span></div>
+<div class="flex-1 bg-primary hover:bg-primary/80 transition-colors rounded-t-sm h-[90%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary opacity-100">45</span></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary transition-colors rounded-t-sm h-[60%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">30</span></div>
+<div class="flex-1 bg-primary/30 hover:bg-primary transition-colors rounded-t-sm h-[70%] relative group z-10"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">35</span></div>
+<!-- X-Axis Labels -->
+<div class="absolute -bottom-6 left-0 right-0 flex justify-between px-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
+<span>M</span>
+<span>T</span>
+<span>W</span>
+<span>T</span>
+<span class="text-primary font-bold">F</span>
+<span>S</span>
+<span>S</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto flex border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#15202b]/95 backdrop-blur-md px-2 pb-safe pt-2 z-50">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-2xl">style</span>
+<span class="text-[10px] font-medium tracking-wide">Cards</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined text-2xl">fact_check</span>
+<span class="text-[10px] font-medium tracking-wide">Quizzes</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary py-2" href="#">
+<span class="material-symbols-outlined text-2xl font-variation-settings-[FILL:1]">person</span>
+<span class="text-[10px] font-medium tracking-wide">Profile</span>
+</a>
+</div>
+</div>
+</body></html>
