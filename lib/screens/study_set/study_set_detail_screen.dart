@@ -661,6 +661,7 @@ class _FlashCardState extends State<_FlashCard>
               child: _frontRotation.value <= pi / 2 ? child : const SizedBox(),
             ),
             child: _CardFace(label: frontLabel, text: frontText,
+                isBack: false,
                 ipa: widget.showTermFirst ? widget.term.ipa : null,
                 example: widget.showTermFirst ? null : widget.term.exampleSentence),
           ),
@@ -675,6 +676,7 @@ class _FlashCardState extends State<_FlashCard>
               child: _backRotation.value >= pi / 2 ? const SizedBox() : child,
             ),
             child: _CardFace(label: backLabel, text: backText,
+                isBack: true,
                 ipa: !widget.showTermFirst ? widget.term.ipa : null,
                 example: !widget.showTermFirst ? null : widget.term.exampleSentence),
           ),
@@ -689,19 +691,32 @@ class _CardFace extends StatelessWidget {
   final String text;
   final String? ipa;
   final String? example;
+  final bool isBack;
 
   const _CardFace(
-      {required this.label, required this.text, this.ipa, this.example});
+      {required this.label, required this.text, this.ipa, this.example, this.isBack = false});
 
   @override
   Widget build(BuildContext context) {
+    // Front: indigo→purple  |  Back: pink→red  (matching Angular client)
+    final gradient = isBack
+        ? const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF093FB), Color(0xFFF5576C)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+          );
+
     return Container(
       width: double.infinity,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        gradient: gradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.25),
@@ -721,15 +736,15 @@ class _CardFace extends StatelessWidget {
                   Text(
                     text,
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                        fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
                   if (ipa != null) ...[
                     const SizedBox(height: 8),
                     Text(
                       ipa!,
-                      style: const TextStyle(
-                          color: AppTheme.primaryColor,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 16,
                           fontStyle: FontStyle.italic),
                       textAlign: TextAlign.center,
@@ -739,8 +754,8 @@ class _CardFace extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       example!,
-                      style: const TextStyle(
-                          color: AppTheme.textSecondaryColor, fontSize: 14),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8), fontSize: 14, fontStyle: FontStyle.italic),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -754,8 +769,8 @@ class _CardFace extends StatelessWidget {
             left: 20,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppTheme.textSecondaryColor,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75),
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.2,
@@ -767,14 +782,14 @@ class _CardFace extends StatelessWidget {
             bottom: 16,
             right: 20,
             child: Row(
-              children: const [
+              children: [
                 Icon(Icons.touch_app_outlined,
-                    size: 13, color: AppTheme.textSecondaryColor),
-                SizedBox(width: 4),
+                    size: 13, color: Colors.white.withValues(alpha: 0.7)),
+                const SizedBox(width: 4),
                 Text(
-                  'Tap để lật',
+                  'Tap to flip',
                   style: TextStyle(
-                      color: AppTheme.textSecondaryColor, fontSize: 11),
+                      color: Colors.white.withValues(alpha: 0.7), fontSize: 11),
                 ),
               ],
             ),
@@ -786,6 +801,7 @@ class _CardFace extends StatelessWidget {
 }
 
 // ── Term grid card ─────────────────────────────────────────────────────────
+
 
 class _TermGridCard extends StatelessWidget {
   final Term term;
