@@ -5,39 +5,25 @@ import 'data/services/auth_service.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Restore saved session BEFORE building the widget tree so the router
+  // redirect sees the correct isAuthenticated value on first evaluation.
+  final authService = AuthService();
+  await authService.tryAutoLogin();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AuthService(),
-      child: const QuizcardApp(),
+    ChangeNotifierProvider.value(
+      value: authService,
+      child: QuizcardApp(authService: authService),
     ),
   );
 }
 
-class QuizcardApp extends StatefulWidget {
-  const QuizcardApp({super.key});
-
-  @override
-  State<QuizcardApp> createState() => _QuizcardAppState();
-}
-
-class _QuizcardAppState extends State<QuizcardApp> {
-  late final AuthService _authService;
-  late final _router;
-  bool _initialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _authService = context.read<AuthService>();
-      _router = AppRouter.router(_authService);
-      _initialized = true;
-      // Try to restore saved session
-      _authService.tryAutoLogin();
-    }
-  }
+class QuizcardApp extends StatelessWidget {
+  final AuthService authService;
+  const QuizcardApp({super.key, required this.authService});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +31,7 @@ class _QuizcardAppState extends State<QuizcardApp> {
       title: 'Quizcard Mobile',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      routerConfig: _router,
+      routerConfig: AppRouter.router(authService),
     );
   }
 }
