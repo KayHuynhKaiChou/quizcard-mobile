@@ -131,7 +131,7 @@ class PublicProfileScreen extends StatelessWidget {
                                   ],
                                 ),
                                 TextButton(
-                                  onPressed: () => context.go('/decks'),
+                                  onPressed: () => context.go('/home'),
                                   style: TextButton.styleFrom(
                                     backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                                     foregroundColor: AppTheme.primaryColor,

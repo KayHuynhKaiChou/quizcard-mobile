@@ -94,4 +94,42 @@ class StudySetRepository {
   Future<void> rate(String id, int rating) async {
     await _auth.authenticatedPost('/study-sets/$id/rate', body: {'rating': rating});
   }
+
+  // Term CRUD
+  Future<Term> addTerm(String studySetId, {
+    required String term,
+    required String definition,
+    String? exampleSentence,
+    String? imageUrl,
+  }) async {
+    final response = await _auth.authenticatedPost('/study-sets/$studySetId/terms', body: {
+      'term': term,
+      'definition': definition,
+      if (exampleSentence != null) 'exampleSentence': exampleSentence,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+    });
+    if (response.statusCode != 201) throw Exception('Failed to add term');
+    return Term.fromJson(jsonDecode(response.body));
+  }
+
+  Future<Term> updateTerm(String termId, {
+    required String term,
+    required String definition,
+    String? exampleSentence,
+    String? imageUrl,
+  }) async {
+    final response = await _auth.authenticatedPut('/terms/$termId', body: {
+      'term': term,
+      'definition': definition,
+      if (exampleSentence != null) 'exampleSentence': exampleSentence,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+    });
+    if (response.statusCode != 200) throw Exception('Failed to update term');
+    return Term.fromJson(jsonDecode(response.body));
+  }
+
+  Future<void> deleteTerm(String termId) async {
+    final response = await _auth.authenticatedDelete('/terms/$termId');
+    if (response.statusCode != 204) throw Exception('Failed to delete term');
+  }
 }

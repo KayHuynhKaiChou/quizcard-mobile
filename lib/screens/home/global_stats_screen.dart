@@ -135,7 +135,7 @@ class _GlobalStatsScreenState extends State<GlobalStatsScreen> {
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/decks'),
+                        onPressed: () => context.go('/explore'),
                         child: const Text('View All'),
                       ),
                     ],
@@ -335,7 +335,7 @@ class _GlobalStatsScreenState extends State<GlobalStatsScreen> {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: InkWell(
-          onTap: () => context.go('/decks'),
+          onTap: () => context.go('/study-set/${deck.id}'),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),

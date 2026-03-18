@@ -23,8 +23,8 @@ import '../screens/home/leaderboard_screen.dart';
 import '../screens/library/library_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 
-// Deck screens
-import '../screens/decks/deck_terms_list_screen.dart';
+// Study Set screens
+import '../screens/study_set/study_set_detail_screen.dart';
 import '../screens/decks/create_term_screen.dart';
 import '../screens/decks/flashcard_study_screen.dart';
 
@@ -93,10 +93,18 @@ class AppRouter {
         ),
 
         // Full-screen flows (no bottom nav)
-        GoRoute(path: '/decks', builder: (c, s) => const DeckTermsListScreen()),
         GoRoute(
-          path: '/create_term',
-          builder: (c, s) => const CreateTermScreen(),
+          path: '/study-set/:id',
+          builder: (c, s) => StudySetDetailScreen(
+            studySetId: s.pathParameters['id']!,
+          ),
+        ),
+        GoRoute(
+          path: '/study-set/:id/term-edit',
+          builder: (c, s) => CreateTermScreen(
+            studySetId: s.pathParameters['id']!,
+            term: s.extra as Term?,
+          ),
         ),
         GoRoute(
           path: '/study',

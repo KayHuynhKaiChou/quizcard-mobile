@@ -276,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => context.go('/decks'),
+                    onPressed: continueSet != null ? () => context.go('/study-set/${continueSet.id}') : null,
                     icon: const Icon(Icons.play_arrow, size: 18),
                     label: const Text('Resume Study'),
                   ),
@@ -312,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: InkWell(
-          onTap: () => context.go('/decks'),
+          onTap: () => context.go('/study-set/${set.id}'),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),

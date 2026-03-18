@@ -74,7 +74,7 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen>
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.go('/decks')),
+        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
         title: const Text('Study Mode'),
         actions: [
           IconButton(icon: const Icon(Icons.quiz_outlined), onPressed: () => context.go('/quiz_challenge')),
