@@ -132,7 +132,7 @@ class CursorPage<T> {
     Map<String, dynamic> json,
     T Function(Map<String, dynamic>) fromJsonItem,
   ) {
-    final contentList = (json['content'] as List?)
+    final contentList = (json['items'] as List?)
         ?.map((e) => fromJsonItem(e as Map<String, dynamic>))
         .toList() ?? [];
     return CursorPage(
