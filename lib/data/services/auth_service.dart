@@ -13,7 +13,7 @@ class AuthService extends ChangeNotifier {
         _baseUrl = baseUrl ??
             const String.fromEnvironment(
               'QUIZCARD_API_BASE_URL',
-              defaultValue: 'http://10.0.2.2:8081/api',
+              defaultValue: 'http://localhost:8081/api',
             );
 
   final http.Client _client;

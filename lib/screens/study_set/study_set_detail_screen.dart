@@ -96,7 +96,11 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
     if (_currentIndex < terms.length - 1) setState(() => _currentIndex++);
   }
 
-  void _retry() => setState(() => _dataFuture = _loadData());
+  void _retry() {
+    setState(() {
+      _dataFuture = _loadData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -668,7 +672,7 @@ class _FlashCardState extends State<_FlashCard>
                 ..setEntry(3, 2, 0.001)
                 ..rotateY(_backRotation.value),
               alignment: Alignment.center,
-              child: _backRotation.value < pi / 2 ? const SizedBox() : child,
+              child: _backRotation.value >= pi / 2 ? const SizedBox() : child,
             ),
             child: _CardFace(label: backLabel, text: backText,
                 ipa: !widget.showTermFirst ? widget.term.ipa : null,

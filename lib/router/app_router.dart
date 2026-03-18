@@ -27,6 +27,7 @@ import '../screens/notifications/notifications_screen.dart';
 import '../screens/study_set/study_set_detail_screen.dart';
 import '../screens/decks/create_term_screen.dart';
 import '../screens/decks/flashcard_study_screen.dart';
+import '../data/models/study_set_models.dart';
 
 // Quiz screens
 import '../screens/quiz/quiz_challenge_screen.dart';

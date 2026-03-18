@@ -95,14 +95,14 @@ class Term {
       id: json['id']?.toString() ?? '',
       term: json['term'] ?? '',
       definition: json['definition'] ?? '',
-      ipa: json['ipa'],
-      exampleSentence: json['exampleSentence'],
-      exampleTranslation: json['exampleTranslation'],
-      imageUrl: json['imageUrl'],
-      audioUrl: json['audioUrl'],
-      synonyms: json['synonyms'],
-      antonyms: json['antonyms'],
-      orderIndex: json['orderIndex'] ?? 0,
+      ipa: _stringOrNull(json['ipa']),
+      exampleSentence: _stringOrNull(json['exampleSentence']),
+      exampleTranslation: _stringOrNull(json['exampleTranslation']),
+      imageUrl: _stringOrNull(json['imageUrl']),
+      audioUrl: _stringOrNull(json['audioUrl']),
+      synonyms: _stringOrNull(json['synonyms']),
+      antonyms: _stringOrNull(json['antonyms']),
+      orderIndex: _intOrZero(json['orderIndex']),
     );
   }
 
@@ -118,6 +118,23 @@ class Term {
       if (antonyms != null) 'antonyms': antonyms,
       'orderIndex': orderIndex,
     };
+  }
+
+  static String? _stringOrNull(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value;
+    if (value is List) {
+      final parts = value.map((e) => e?.toString()).whereType<String>().toList();
+      return parts.isEmpty ? null : parts.join(', ');
+    }
+    return value.toString();
+  }
+
+  static int _intOrZero(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 }
 
