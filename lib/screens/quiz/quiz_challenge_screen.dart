@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -11,7 +10,7 @@ import '../../data/repositories/quiz_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
-// ── Local result model (passed to QuizResultsScreen via extra) ──────────────
+// ── Local result model (passed to QuizResultsScreen via router extra) ───────
 
 class LocalQuizResult {
   final int score;
@@ -32,13 +31,17 @@ class LocalQuizResult {
 }
 
 class WrongAnswer {
-  final String term;
+  final String questionText;
   final String userAnswer;
   final String correctAnswer;
-  WrongAnswer({required this.term, required this.userAnswer, required this.correctAnswer});
+  WrongAnswer({
+    required this.questionText,
+    required this.userAnswer,
+    required this.correctAnswer,
+  });
 }
 
-// ── Main Screen ─────────────────────────────────────────────────────────────
+// ── Screen ──────────────────────────────────────────────────────────────────
 
 class QuizChallengeScreen extends StatefulWidget {
   final String studySetId;
@@ -49,65 +52,82 @@ class QuizChallengeScreen extends StatefulWidget {
 }
 
 class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
-  // ── State machine: setup | loading | quiz | submitting
+  // ── Phase: setup | loading | quiz | submitting
   String _phase = 'setup';
+  String? _error;
 
-  // Setup options
+  // ── Setup config
   String _quizType = 'MULTIPLE_CHOICE';
   int _questionCount = 10;
 
-  // Quiz data
+  // ── Quiz runtime state
   GeneratedQuiz? _quiz;
   int _currentIndex = 0;
   String? _selectedAnswer;
-  String _fillBlankAnswer = '';
+  final TextEditingController _fillCtrl = TextEditingController();
   bool _isAnswered = false;
+  bool _fillAnswerCorrect = false;
   int _correctCount = 0;
   final List<WrongAnswer> _wrongAnswers = [];
   final List<QuizAnswer> _allAnswers = [];
 
-  // Timer
+  // ── Timer
   Timer? _timer;
   int _timeLeft = 20;
-  int _quizStartTimestamp = 0;
-
-  String? _error;
+  int _quizStartMs = 0;
 
   @override
   void dispose() {
     _timer?.cancel();
+    _fillCtrl.dispose();
     super.dispose();
   }
 
+  // ── Helpers ────────────────────────────────────────────────────────────
+
   int get _timerMax => _quizType == 'FILL_BLANK' ? 30 : 20;
+
+  QuizQuestion? get _currentQ =>
+      _quiz != null && _currentIndex < _quiz!.questions.length
+          ? _quiz!.questions[_currentIndex]
+          : null;
 
   // ── API calls ──────────────────────────────────────────────────────────
 
   Future<void> _startQuiz() async {
-    setState(() { _phase = 'loading'; _error = null; });
+    setState(() {
+      _phase = 'loading';
+      _error = null;
+    });
     try {
       final repo = QuizRepository(context.read<AuthService>());
-      final config = QuizConfig(
+      final quiz = await repo.generateQuiz(QuizConfig(
         studySetId: widget.studySetId,
         quizType: _quizType,
         questionCount: _questionCount,
-      );
-      final quiz = await repo.generateQuiz(config);
+      ));
       setState(() {
         _quiz = quiz;
-        _phase = 'quiz';
         _currentIndex = 0;
-        _quizStartTimestamp = DateTime.now().millisecondsSinceEpoch;
+        _correctCount = 0;
+        _wrongAnswers.clear();
+        _allAnswers.clear();
+        _phase = 'quiz';
+        _quizStartMs = DateTime.now().millisecondsSinceEpoch;
       });
       _startTimer();
     } catch (e) {
-      setState(() { _phase = 'setup'; _error = e.toString(); });
+      setState(() {
+        _phase = 'setup';
+        _error = 'Failed to generate quiz. Please try again.';
+      });
     }
   }
 
   Future<void> _finishQuiz() async {
     _timer?.cancel();
-    final timeTaken = (DateTime.now().millisecondsSinceEpoch - _quizStartTimestamp) ~/ 1000;
+    final timeTaken =
+        (DateTime.now().millisecondsSinceEpoch - _quizStartMs) ~/ 1000;
     setState(() => _phase = 'submitting');
 
     try {
@@ -118,19 +138,18 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
         timeSpentSeconds: timeTaken,
       ));
     } catch (_) {
-      // Silently fail submit — still show results
+      // silently fail — still navigate to results
     }
 
-    final result = LocalQuizResult(
-      score: _correctCount,
-      total: _quiz!.questions.length,
-      timeTakenSeconds: timeTaken,
-      wrongAnswers: _wrongAnswers,
-      studySetId: widget.studySetId,
-    );
-
     if (mounted) {
-      context.go('/quiz_results', extra: result);
+      context.go('/quiz_results',
+          extra: LocalQuizResult(
+            score: _correctCount,
+            total: _quiz!.questions.length,
+            timeTakenSeconds: timeTaken,
+            wrongAnswers: _wrongAnswers,
+            studySetId: widget.studySetId,
+          ));
     }
   }
 
@@ -140,6 +159,7 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
     _timer?.cancel();
     setState(() => _timeLeft = _timerMax);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
       if (_timeLeft > 0) {
         setState(() => _timeLeft--);
       } else {
@@ -150,55 +170,74 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
 
   void _handleTimeout() {
     if (_isAnswered) return;
-    final q = _quiz!.questions[_currentIndex];
+    final q = _currentQ;
+    if (q == null) return;
     _recordAnswer(q, '', isTimeout: true);
   }
 
   // ── Answer logic ───────────────────────────────────────────────────────
 
-  void _selectAnswer(String answer) {
+  /// For MC: tap once to immediately submit
+  void _onMCOptionTap(String option) {
     if (_isAnswered) return;
-    setState(() => _selectedAnswer = answer);
+    setState(() => _selectedAnswer = option);
+    _recordAnswer(_currentQ!, option);
   }
 
-  void _submitAnswer() {
+  /// For TF: tap True or False button
+  void _onTFTap(String value) {
     if (_isAnswered) return;
-    final q = _quiz!.questions[_currentIndex];
-    final answer = q.type == 'FILL_BLANK'
-        ? _fillBlankAnswer.trim()
-        : (_selectedAnswer ?? '');
+    setState(() => _selectedAnswer = value);
+    _recordAnswer(_currentQ!, value);
+  }
+
+  /// For Fill-blank: explicit Submit button
+  void _onFillSubmit() {
+    if (_isAnswered) return;
+    final answer = _fillCtrl.text.trim();
     if (answer.isEmpty) return;
-    _recordAnswer(q, answer);
+    _recordAnswer(_currentQ!, answer);
   }
 
-  void _recordAnswer(QuizQuestion q, String userAnswer, {bool isTimeout = false}) {
+  void _recordAnswer(QuizQuestion q, String userAnswer,
+      {bool isTimeout = false}) {
     _timer?.cancel();
-    setState(() => _isAnswered = true);
-
     final isCorrect = q.type == 'FILL_BLANK'
         ? _fuzzyMatch(userAnswer, q.correctAnswer)
         : userAnswer == q.correctAnswer;
 
-    _allAnswers.add(QuizAnswer(questionId: q.id, selectedAnswer: userAnswer));
+    _allAnswers
+        .add(QuizAnswer(questionId: q.id, selectedAnswer: userAnswer));
 
     if (isCorrect) {
       _correctCount++;
     } else {
       _wrongAnswers.add(WrongAnswer(
-        term: q.questionText,
-        userAnswer: isTimeout ? '(Time out)' : (userAnswer.isEmpty ? '(Skipped)' : userAnswer),
+        questionText: q.questionText,
+        userAnswer: isTimeout
+            ? '(Time out)'
+            : userAnswer.isEmpty
+                ? '(Skipped)'
+                : userAnswer,
         correctAnswer: q.correctAnswer,
       ));
     }
 
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    setState(() {
+      _isAnswered = true;
+      _fillAnswerCorrect = isCorrect;
+    });
+
+    // Auto-advance after feedback delay
+    Future.delayed(const Duration(milliseconds: 1600), () {
       if (!mounted) return;
       if (_currentIndex < _quiz!.questions.length - 1) {
         setState(() {
           _currentIndex++;
           _selectedAnswer = null;
-          _fillBlankAnswer = '';
+          _fillCtrl.clear();
           _isAnswered = false;
+          _fillAnswerCorrect = false;
         });
         _startTimer();
       } else {
@@ -212,7 +251,7 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
     return normalize(input) == normalize(correct);
   }
 
-  // ── Builds ─────────────────────────────────────────────────────────────
+  // ── Build ──────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -220,108 +259,77 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
         ),
         title: const Text('Quiz Challenge'),
       ),
       body: switch (_phase) {
-        'setup'      => _buildSetup(),
-        'loading'    => const Center(child: CircularProgressIndicator()),
-        'submitting' => const Center(child: CircularProgressIndicator()),
-        'quiz'       => _buildQuiz(),
-        _            => _buildSetup(),
+        'loading' || 'submitting' => const Center(
+            child: CircularProgressIndicator()),
+        'quiz' => _buildQuizPhase(),
+        _ => _buildSetupPhase(),
       },
     );
   }
 
-  // ── Setup phase ────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // SETUP PHASE
+  // ══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildSetup() {
+  Widget _buildSetupPhase() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_error != null) ...[
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.errorColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(children: [
-                const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 18),
-                const SizedBox(width: 8),
-                Expanded(child: Text(_error!, style: const TextStyle(color: AppTheme.errorColor, fontSize: 13))),
-              ]),
-            ),
+            _ErrorBanner(message: _error!),
             const SizedBox(height: 16),
           ],
 
-          Text('Quiz Type', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          // Quiz type selector
+          Text('Quiz Type',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
-          ...[
+          for (final tp in [
             ('MULTIPLE_CHOICE', 'Multiple Choice', Icons.list_outlined),
-            ('TRUE_FALSE',      'True / False',    Icons.check_circle_outline),
-            ('FILL_BLANK',      'Fill in the Blank', Icons.edit_outlined),
-          ].map((tp) {
-            final isSelected = _quizType == tp.$1;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: GestureDetector(
-                onTap: () => setState(() => _quizType = tp.$1),
-                child: AnimatedContainer(
-                  duration: 200.ms,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.12) : AppTheme.surfaceColor,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.08),
-                      width: isSelected ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(children: [
-                    Icon(tp.$3, size: 20, color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor),
-                    const SizedBox(width: 12),
-                    Text(tp.$2, style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimaryColor,
-                    )),
-                    const Spacer(),
-                    if (isSelected) const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 18),
-                  ]),
-                ),
-              ).animate().fadeIn(delay: Duration(milliseconds: 60 * ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'FILL_BLANK'].indexOf(tp.$1))),
-            );
-          }),
+            ('TRUE_FALSE', 'True / False', Icons.check_circle_outline),
+            ('FILL_BLANK', 'Fill in the Blank', Icons.edit_outlined),
+          ])
+            _TypeTile(
+              label: tp.$2,
+              icon: tp.$3,
+              subtitle: tp.$1 == 'FILL_BLANK' ? '30s per question' : '20s per question',
+              isSelected: _quizType == tp.$1,
+              onTap: () => setState(() => _quizType = tp.$1),
+            ),
 
           const SizedBox(height: 24),
+
+          // Question count
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Questions', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text('$_questionCount', style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
+              Text('Questions',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              _CountBadge(count: _questionCount),
             ],
           ),
           Slider(
             value: _questionCount.toDouble(),
-            min: 1, max: 20,
+            min: 1,
+            max: 20,
             divisions: 19,
             activeColor: AppTheme.primaryColor,
             onChanged: (v) => setState(() => _questionCount = v.round()),
-          ),
-          Text(
-            'Up to 20 questions. Actual count depends on how many terms the study set has.',
-            style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12),
           ),
 
           const SizedBox(height: 32),
@@ -330,221 +338,758 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
             child: ElevatedButton.icon(
               onPressed: _startQuiz,
               icon: const Icon(Icons.play_arrow),
-              label: const Text('Start Quiz', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+              label: const Text('Start Quiz',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16)),
             ),
-          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05),
+          ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.05),
         ],
       ),
     );
   }
 
-  // ── Quiz phase ─────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // QUIZ PHASE
+  // ══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildQuiz() {
-    final quiz = _quiz!;
-    if (quiz.questions.isEmpty) {
-      return const Center(child: Text('No questions available.'));
-    }
-    final q = quiz.questions[_currentIndex];
-    final progress = (_currentIndex + 1) / quiz.questions.length;
-    final timerProgress = _timeLeft / _timerMax;
-    final timerColor = timerProgress > 0.5
+  Widget _buildQuizPhase() {
+    final q = _currentQ;
+    if (q == null) return const SizedBox();
+    final total = _quiz!.questions.length;
+    final timerRatio = _timeLeft / _timerMax;
+    final timerColor = timerRatio > 0.4
         ? AppTheme.primaryColor
-        : timerProgress > 0.25
+        : timerRatio > 0.2
             ? const Color(0xFFF59E0B)
             : AppTheme.errorColor;
 
     return Column(
       children: [
-        // Progress + timer
+        // ─ Header: question counter + timer ─
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Column(children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Question ${_currentIndex + 1} of ${quiz.questions.length}',
-                    style: const TextStyle(fontWeight: FontWeight.w500)),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: timerColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(children: [
-                    Icon(Icons.timer_outlined, size: 14, color: timerColor),
-                    const SizedBox(width: 4),
-                    Text('${_timeLeft}s', style: TextStyle(color: timerColor, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ]),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
-                minHeight: 6,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Question ${_currentIndex + 1} of $total',
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 14),
               ),
-            ),
-          ]),
+              _TimerBadge(timeLeft: _timeLeft, color: timerColor),
+            ],
+          ),
         ),
-        const SizedBox(height: 4),
         // Timer progress bar
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: timerProgress,
-              backgroundColor: Colors.white.withValues(alpha: 0.05),
+              value: timerRatio,
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
               valueColor: AlwaysStoppedAnimation(timerColor),
+              minHeight: 5,
+            ),
+          ),
+        ),
+        // Question progress bar
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: (_currentIndex + 1) / total,
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
+              valueColor:
+                  const AlwaysStoppedAnimation(AppTheme.primaryColor),
               minHeight: 3,
             ),
           ),
         ),
 
-        // Question text
+        const SizedBox(height: 16),
+
+        // ─ Question card ─
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               children: [
-                // Question
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                  ),
-                  child: Text(
-                    q.questionText,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold, height: 1.4,
-                    ),
-                  ),
-                ).animate(key: ValueKey('q_$_currentIndex')).fadeIn(duration: 180.ms),
-                const SizedBox(height: 20),
-
-                // Answers
-                Expanded(
-                  child: q.type == 'FILL_BLANK'
-                      ? _buildFillBlank()
-                      : _buildChoices(q),
+                AnimatedSwitcher(
+                  duration: 180.ms,
+                  child:
+                      _buildQuestionContent(q, key: ValueKey(_currentIndex)),
                 ),
               ],
             ),
           ),
         ),
 
-        // Bottom bar
-        _buildBottomBar(q),
+        // ─ Action bar ─
+        _buildActionBar(q),
       ],
     );
   }
 
-  Widget _buildChoices(QuizQuestion q) {
-    return ListView(
-      children: q.options.asMap().entries.map((entry) {
-        final option = entry.value;
-        final isSelected = _selectedAnswer == option;
-        final isCorrect = _isAnswered && option == q.correctAnswer;
-        final isWrong = _isAnswered && isSelected && option != q.correctAnswer;
-
-        Color borderColor = Colors.white.withValues(alpha: 0.08);
-        Color bgColor = AppTheme.surfaceColor;
-        if (isCorrect) { bgColor = AppTheme.successColor.withValues(alpha: 0.12); borderColor = AppTheme.successColor; }
-        else if (isWrong) { bgColor = AppTheme.errorColor.withValues(alpha: 0.12); borderColor = AppTheme.errorColor; }
-        else if (isSelected) { bgColor = AppTheme.primaryColor.withValues(alpha: 0.10); borderColor = AppTheme.primaryColor; }
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: GestureDetector(
-            onTap: () => _selectAnswer(option),
-            child: AnimatedContainer(
-              duration: 200.ms,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: borderColor, width: isCorrect || isWrong ? 1.5 : 1),
-              ),
-              child: Row(children: [
-                Expanded(child: Text(option, style: TextStyle(
-                  fontWeight: isSelected || isCorrect ? FontWeight.bold : FontWeight.normal,
-                ))),
-                if (isCorrect) const Icon(Icons.check_circle, color: AppTheme.successColor, size: 18),
-                if (isWrong)   const Icon(Icons.cancel, color: AppTheme.errorColor, size: 18),
-              ]),
-            ),
-          ).animate(key: ValueKey('opt_${_currentIndex}_${entry.key}')).fadeIn(delay: Duration(milliseconds: 50 * entry.key)).slideY(begin: 0.04, end: 0),
-        );
-      }).toList(),
+  Widget _buildQuestionContent(QuizQuestion q, {Key? key}) {
+    return Column(
+      key: key,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        switch (q.type) {
+          'TRUE_FALSE' => _buildTrueFalseContent(q),
+          'FILL_BLANK' => _buildFillBlankContent(q),
+          _ => _buildMultiChoiceContent(q),
+        },
+      ],
     );
   }
 
-  Widget _buildFillBlank() {
+  // ─ Multiple Choice ─────────────────────────────────────────────────────
+
+  Widget _buildMultiChoiceContent(QuizQuestion q) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Type your answer:', style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 13)),
+        // Question prompt
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              const Text('TERM',
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2)),
+              const SizedBox(height: 8),
+              Text(
+                q.questionText,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ).animate().fadeIn(duration: 180.ms),
         const SizedBox(height: 8),
-        TextField(
-          enabled: !_isAnswered,
-          onChanged: (v) => _fillBlankAnswer = v,
-          onSubmitted: (_) => _submitAnswer(),
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Enter the term...'),
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 8),
+          child: Text('Choose the correct definition:',
+              style: TextStyle(
+                  color: AppTheme.textSecondaryColor, fontSize: 13)),
         ),
+        // Options
+        ...q.options.asMap().entries.map((entry) {
+          final option = entry.value;
+          final idx = entry.key;
+          final isSelected = _selectedAnswer == option;
+          final isCorrect = _isAnswered && option == q.correctAnswer;
+          final isWrong =
+              _isAnswered && isSelected && option != q.correctAnswer;
+
+          Color bg = AppTheme.surfaceColor;
+          Color border = Colors.white.withValues(alpha: 0.08);
+          if (isCorrect) {
+            bg = AppTheme.successColor.withValues(alpha: 0.12);
+            border = AppTheme.successColor;
+          } else if (isWrong) {
+            bg = AppTheme.errorColor.withValues(alpha: 0.12);
+            border = AppTheme.errorColor;
+          } else if (isSelected) {
+            bg = AppTheme.primaryColor.withValues(alpha: 0.1);
+            border = AppTheme.primaryColor;
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: GestureDetector(
+              onTap: () => _onMCOptionTap(option),
+              child: AnimatedContainer(
+                duration: 200.ms,
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: border,
+                      width: (isCorrect || isWrong) ? 1.5 : 1),
+                ),
+                child: Row(
+                  children: [
+                    // Option letter badge
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: isCorrect
+                            ? AppTheme.successColor
+                            : isWrong
+                                ? AppTheme.errorColor
+                                : isSelected
+                                    ? AppTheme.primaryColor
+                                    : Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: isCorrect
+                            ? const Icon(Icons.check,
+                                color: Colors.white, size: 16)
+                            : isWrong
+                                ? const Icon(Icons.close,
+                                    color: Colors.white, size: 16)
+                                : Text(
+                                    String.fromCharCode(65 + idx),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12),
+                                  ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        option,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: (isSelected || isCorrect)
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate(delay: Duration(milliseconds: 60 * idx))
+                  .fadeIn(duration: 150.ms)
+                  .slideY(begin: 0.04, end: 0),
+            ),
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildBottomBar(QuizQuestion q) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
-      ),
-      child: Row(children: [
-        if (q.type == 'TRUE_FALSE') ...[
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _isAnswered ? null : () { setState(() => _selectedAnswer = 'false'); _submitAnswer(); },
-              icon: const Icon(Icons.close, color: AppTheme.errorColor),
-              label: const Text('False', style: TextStyle(color: AppTheme.errorColor)),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: AppTheme.errorColor)),
+  // ─ True / False ────────────────────────────────────────────────────────
+
+  Widget _buildTrueFalseContent(QuizQuestion q) {
+    // correctAnswer is 'true' or 'false'
+    // questionText shows the term; options[0] is the displayed definition statement
+    final statement =
+        q.options.isNotEmpty ? q.options.first : q.questionText;
+
+    final selectedTrue = _selectedAnswer == 'true';
+    final selectedFalse = _selectedAnswer == 'false';
+    final answeredCorrect = q.correctAnswer;
+
+    Color trueColor = const Color(0xFF22C55E);
+    Color falseColor = AppTheme.errorColor;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Term
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
             ),
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: _isAnswered ? null : () { setState(() => _selectedAnswer = 'true'); _submitAnswer(); },
-              icon: const Icon(Icons.check),
-              label: const Text('True'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.successColor,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Column(
+            children: [
+              const Text('TERM',
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2)),
+              const SizedBox(height: 8),
+              Text(
+                q.questionText,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ).animate().fadeIn(duration: 180.ms),
+        const SizedBox(height: 16),
+
+        // Statement to evaluate
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border:
+                Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Column(
+            children: [
+              const Text('Is this definition correct?',
+                  style: TextStyle(
+                      color: AppTheme.textSecondaryColor, fontSize: 12)),
+              const SizedBox(height: 8),
+              Text(
+                '"$statement"',
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    height: 1.4),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // True / False big buttons
+        Row(
+          children: [
+            // TRUE
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _onTFTap('true'),
+                child: AnimatedContainer(
+                  duration: 200.ms,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  decoration: BoxDecoration(
+                    color: _isAnswered
+                        ? answeredCorrect == 'true'
+                            ? trueColor.withValues(alpha: 0.2)
+                            : (selectedTrue
+                                ? AppTheme.errorColor.withValues(alpha: 0.15)
+                                : AppTheme.surfaceColor)
+                        : selectedTrue
+                            ? trueColor.withValues(alpha: 0.15)
+                            : AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _isAnswered
+                          ? answeredCorrect == 'true'
+                              ? trueColor
+                              : (selectedTrue
+                                  ? AppTheme.errorColor
+                                  : Colors.white.withValues(alpha: 0.08))
+                          : selectedTrue
+                              ? trueColor
+                              : Colors.white.withValues(alpha: 0.08),
+                      width: selectedTrue || (_isAnswered && answeredCorrect == 'true') ? 2 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: _isAnswered && answeredCorrect == 'true'
+                            ? trueColor
+                            : selectedTrue && _isAnswered
+                                ? AppTheme.errorColor
+                                : trueColor,
+                        size: 32,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'TRUE',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: _isAnswered && answeredCorrect == 'true'
+                              ? trueColor
+                              : selectedTrue && _isAnswered
+                                  ? AppTheme.errorColor
+                                  : trueColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
+            const SizedBox(width: 12),
+            // FALSE
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _onTFTap('false'),
+                child: AnimatedContainer(
+                  duration: 200.ms,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  decoration: BoxDecoration(
+                    color: _isAnswered
+                        ? answeredCorrect == 'false'
+                            ? falseColor.withValues(alpha: 0.2)
+                            : (selectedFalse
+                                ? AppTheme.errorColor.withValues(alpha: 0.15)
+                                : AppTheme.surfaceColor)
+                        : selectedFalse
+                            ? falseColor.withValues(alpha: 0.15)
+                            : AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _isAnswered
+                          ? answeredCorrect == 'false'
+                              ? falseColor
+                              : (selectedFalse
+                                  ? AppTheme.errorColor
+                                  : Colors.white.withValues(alpha: 0.08))
+                          : selectedFalse
+                              ? falseColor
+                              : Colors.white.withValues(alpha: 0.08),
+                      width: selectedFalse || (_isAnswered && answeredCorrect == 'false') ? 2 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.cancel_outlined,
+                        color: _isAnswered && answeredCorrect == 'false'
+                            ? falseColor
+                            : selectedFalse && _isAnswered
+                                ? AppTheme.errorColor
+                                : falseColor,
+                        size: 32,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'FALSE',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: _isAnswered && answeredCorrect == 'false'
+                              ? falseColor
+                              : selectedFalse && _isAnswered
+                                  ? AppTheme.errorColor
+                                  : falseColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.05, end: 0),
+      ],
+    );
+  }
+
+  // ─ Fill in the Blank ───────────────────────────────────────────────────
+
+  Widget _buildFillBlankContent(QuizQuestion q) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('What term matches this definition?',
+            style:
+                TextStyle(color: AppTheme.textSecondaryColor, fontSize: 13)),
+        const SizedBox(height: 12),
+        // Definition prompt
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+            ),
+            borderRadius: BorderRadius.circular(16),
           ),
-        ] else ...[
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _isAnswered ? null : _submitAnswer,
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-              child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          child: Column(
+            children: [
+              const Text('DEFINITION',
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2)),
+              const SizedBox(height: 8),
+              Text(
+                q.questionText,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 18, height: 1.4),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ).animate().fadeIn(duration: 180.ms),
+        const SizedBox(height: 20),
+
+        // Input
+        TextField(
+          controller: _fillCtrl,
+          enabled: !_isAnswered,
+          onSubmitted: (_) => _onFillSubmit(),
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            hintText: 'Type the term...',
+            suffixIcon: _isAnswered
+                ? Icon(
+                    _fillAnswerCorrect
+                        ? Icons.check_circle
+                        : Icons.cancel,
+                    color: _fillAnswerCorrect
+                        ? AppTheme.successColor
+                        : AppTheme.errorColor,
+                  )
+                : null,
+          ),
+        ),
+
+        // Feedback after answering
+        if (_isAnswered) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: (_fillAnswerCorrect
+                      ? AppTheme.successColor
+                      : AppTheme.errorColor)
+                  .withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _fillAnswerCorrect
+                    ? AppTheme.successColor
+                    : AppTheme.errorColor,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _fillAnswerCorrect ? Icons.check_circle : Icons.info_outline,
+                  color: _fillAnswerCorrect
+                      ? AppTheme.successColor
+                      : AppTheme.errorColor,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _fillAnswerCorrect
+                      ? const Text('Correct! Well done.',
+                          style: TextStyle(
+                              color: AppTheme.successColor,
+                              fontWeight: FontWeight.w600))
+                      : RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                color: AppTheme.errorColor, fontSize: 13),
+                            children: [
+                              const TextSpan(text: 'Correct answer: '),
+                              TextSpan(
+                                text: q.correctAnswer,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 200.ms),
+        ],
+      ],
+    );
+  }
+
+  // ─ Action bar ──────────────────────────────────────────────────────────
+
+  Widget _buildActionBar(QuizQuestion q) {
+    // MC and TF: auto-submit on tap — no action bar needed (auto-advances)
+    // Fill-blank: show Submit button
+    if (q.type != 'FILL_BLANK') return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundColor,
+        border: Border(
+            top:
+                BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _isAnswered ? null : _onFillSubmit,
+          style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14)),
+          child: const Text('Submit',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Helper sub-widgets ──────────────────────────────────────────────────────
+
+class _TypeTile extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String subtitle;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _TypeTile({
+    required this.label,
+    required this.icon,
+    required this.subtitle,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                : AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : Colors.white.withValues(alpha: 0.08),
+              width: isSelected ? 1.5 : 1,
             ),
           ),
-        ],
+          child: Row(
+            children: [
+              Icon(icon,
+                  size: 22,
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : AppTheme.textSecondaryColor),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: TextStyle(
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected
+                              ? AppTheme.primaryColor
+                              : AppTheme.textPrimaryColor,
+                        )),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            color: AppTheme.textSecondaryColor,
+                            fontSize: 12)),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(Icons.check_circle,
+                    color: AppTheme.primaryColor, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CountBadge extends StatelessWidget {
+  final int count;
+  const _CountBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text('$count',
+          style: const TextStyle(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 16)),
+    );
+  }
+}
+
+class _TimerBadge extends StatelessWidget {
+  final int timeLeft;
+  final Color color;
+  const _TimerBadge({required this.timeLeft, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(children: [
+        Icon(Icons.timer_outlined, size: 14, color: color),
+        const SizedBox(width: 4),
+        Text('${timeLeft}s',
+            style: TextStyle(
+                color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+      ]),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  const _ErrorBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.errorColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.4)),
+      ),
+      child: Row(children: [
+        const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+            child: Text(message,
+                style: const TextStyle(
+                    color: AppTheme.errorColor, fontSize: 13))),
       ]),
     );
   }
