@@ -206,11 +206,11 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
                   label: const Text('Thêm từ', style: TextStyle(color: AppTheme.primaryColor)),
                 ),
               TextButton.icon(
-                onPressed: () => context.go('/quiz_challenge'),
+                onPressed: () => context.go('/quiz/${detail.id}'),
                 icon: const Icon(Icons.play_arrow,
                     size: 16, color: AppTheme.primaryColor),
                 label: const Text(
-                  'Làm quiz',
+                  'Quiz',
                   style: TextStyle(color: AppTheme.primaryColor),
                 ),
               ),

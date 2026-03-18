@@ -112,12 +112,16 @@ class AppRouter {
           builder: (c, s) => const FlashcardStudyScreen(),
         ),
         GoRoute(
-          path: '/quiz_challenge',
-          builder: (c, s) => const QuizChallengeScreen(),
+          path: '/quiz/:studySetId',
+          builder: (c, s) => QuizChallengeScreen(
+            studySetId: s.pathParameters['studySetId']!,
+          ),
         ),
         GoRoute(
           path: '/quiz_results',
-          builder: (c, s) => const QuizResultsScreen(),
+          builder: (c, s) => QuizResultsScreen(
+            result: s.extra as LocalQuizResult,
+          ),
         ),
         GoRoute(
           path: '/quiz-history',
