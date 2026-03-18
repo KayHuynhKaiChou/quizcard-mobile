@@ -199,14 +199,14 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
               if (detail.isOwner)
                 TextButton.icon(
                   onPressed: () async {
-                    final result = await context.push<bool>('/study-set/${detail.id}/term-edit');
+                    final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit');
                     if (result == true) _retry();
                   },
                   icon: const Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
                   label: const Text('Thêm từ', style: TextStyle(color: AppTheme.primaryColor)),
                 ),
               TextButton.icon(
-                onPressed: () => context.go('/quiz/${detail.id}'),
+                onPressed: () => context.go('/quiz/${widget.studySetId}'),
                 icon: const Icon(Icons.play_arrow,
                     size: 16, color: AppTheme.primaryColor),
                 label: const Text(
