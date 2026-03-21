@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../data/repositories/study_set_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../ai/ai_generate_terms_screen.dart';
+import '../ai/ai_extract_text_screen.dart';
 
 class _TermData {
   TextEditingController termCtrl = TextEditingController();
@@ -64,6 +66,22 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
         const SnackBar(content: Text('A study set needs at least two terms.')),
       );
     }
+  }
+
+  /// Adds AI-generated/extracted terms to the terms list.
+  void _addTermsFromAi(List<Map<String, dynamic>> aiTerms) {
+    if (aiTerms.isEmpty) return;
+    setState(() {
+      for (final item in aiTerms) {
+        final td = _TermData();
+        td.termCtrl.text = item['term']?.toString() ?? '';
+        td.defCtrl.text = item['definition']?.toString() ?? '';
+        _terms.add(td);
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Đã thêm ${aiTerms.length} thuật ngữ từ AI.')),
+    );
   }
 
   Future<void> _save() async {
@@ -238,6 +256,55 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
               );
             }),
             const SizedBox(height: 16),
+            // AI helper buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => AiGenerateTermsScreen(
+                            onTermsGenerated: _addTermsFromAi,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.auto_awesome, size: 16),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    label: const Text('Tạo bằng AI'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => AiExtractTextScreen(
+                            onTermsGenerated: _addTermsFromAi,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.article_outlined, size: 16),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    label: const Text('Trích từ văn bản'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 56,

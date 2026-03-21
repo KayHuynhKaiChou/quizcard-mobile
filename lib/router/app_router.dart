@@ -39,6 +39,9 @@ import '../screens/quiz/quiz_result_detail_screen.dart';
 import '../screens/profile/user_profile_screen.dart';
 import '../screens/profile/public_profile_screen.dart';
 
+// Search screen
+import '../screens/search/search_screen.dart';
+
 import '../widgets/bottom_nav_shell.dart';
 
 class AppRouter {
@@ -144,6 +147,10 @@ class AppRouter {
         GoRoute(
           path: '/notifications',
           builder: (c, s) => const NotificationsScreen(),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (c, s) => const SearchScreen(),
         ),
 
         // Main Application Shell with bottom nav

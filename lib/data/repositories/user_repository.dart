@@ -46,6 +46,22 @@ class UserRepository {
     );
   }
 
+  Future<UserModel> uploadAvatar({
+    required List<int> fileBytes,
+    required String fileName,
+    required String mimeType,
+  }) async {
+    final response = await _auth.authenticatedMultipartPost(
+      '/users/me/avatar',
+      fieldName: 'file',
+      fileBytes: fileBytes,
+      fileName: fileName,
+      mimeType: mimeType,
+    );
+    if (response.statusCode != 200) throw Exception('Failed to upload avatar');
+    return UserModel.fromJson(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> getPublicProfile(String userId) async {
     final response = await _auth.authenticatedGet('/users/$userId/profile');
     if (response.statusCode != 200) throw Exception('Failed to load profile');

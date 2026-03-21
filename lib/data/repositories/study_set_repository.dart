@@ -83,6 +83,15 @@ class StudySetRepository {
     if (response.statusCode != 204) throw Exception('Failed to delete study set');
   }
 
+  Future<StudySetSummary> cloneStudySet(String id) async {
+    final response = await _auth.authenticatedPost('/study-sets/$id/clone');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return StudySetSummary.fromJson(data);
+    }
+    throw Exception('Failed to clone study set');
+  }
+
   Future<void> bookmark(String id) async {
     await _auth.authenticatedPost('/study-sets/$id/bookmark');
   }
@@ -131,5 +140,47 @@ class StudySetRepository {
   Future<void> deleteTerm(String termId) async {
     final response = await _auth.authenticatedDelete('/terms/$termId');
     if (response.statusCode != 204) throw Exception('Failed to delete term');
+  }
+
+  Future<CursorPage<Term>> searchTerms(
+    String studySetId, {
+    required String query,
+    String field = 'term',
+    int cursor = 0,
+    int limit = 20,
+  }) async {
+    final response = await _auth.authenticatedGet(
+      '/study-sets/$studySetId/terms/search',
+      queryParams: {
+        'q': query,
+        'field': field,
+        'cursor': cursor.toString(),
+        'limit': limit.toString(),
+      },
+    );
+    if (response.statusCode != 200) throw Exception('Search terms failed');
+    return CursorPage<Term>.fromJson(jsonDecode(response.body), Term.fromJson);
+  }
+
+  Future<PageResponse<StudySetSummary>> searchStudySets({
+    required String query,
+    int page = 0,
+    int size = 20,
+  }) async {
+    final response = await _auth.authenticatedGet(
+      '/study-sets/search',
+      queryParams: {
+        'query': query,
+        'page': page.toString(),
+        'size': size.toString(),
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Search failed (${response.statusCode})');
+    }
+    return PageResponse<StudySetSummary>.fromJson(
+      jsonDecode(response.body),
+      StudySetSummary.fromJson,
+    );
   }
 }

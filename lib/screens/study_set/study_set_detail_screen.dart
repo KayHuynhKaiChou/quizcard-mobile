@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -37,11 +38,32 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
   List<Term> _shuffledTerms = [];
   final Set<String> _learnedIds = {};
 
+  // Clone state
+  bool _isCloning = false;
+
+  // Search state
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
+  String _searchQuery = '';
+  String _searchField = 'term';
+  List<Term> _searchResults = [];
+  int _searchCursor = 0;
+  bool _searchHasMore = false;
+  bool _isSearching = false;
+  bool _isSearchLoadingMore = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = StudySetRepository(context.read<AuthService>());
     _dataFuture = _loadData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
   Future<_StudySetData> _loadData() async {
@@ -102,6 +124,93 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
     });
   }
 
+  Future<void> _cloneStudySet() async {
+    setState(() => _isCloning = true);
+    try {
+      await _repo.cloneStudySet(widget.studySetId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã clone bộ thẻ thành công!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi clone: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCloning = false);
+    }
+  }
+
+  void _onSearchChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      if (value == _searchQuery) return;
+      setState(() {
+        _searchQuery = value;
+        _searchResults = [];
+        _searchCursor = 0;
+        _searchHasMore = false;
+      });
+      if (value.isNotEmpty) _runSearch(reset: true);
+    });
+  }
+
+  void _onSearchFieldChanged(String field) {
+    setState(() {
+      _searchField = field;
+      _searchResults = [];
+      _searchCursor = 0;
+      _searchHasMore = false;
+    });
+    if (_searchQuery.isNotEmpty) _runSearch(reset: true);
+  }
+
+  Future<void> _runSearch({bool reset = false}) async {
+    if (reset) {
+      setState(() => _isSearching = true);
+    } else {
+      setState(() => _isSearchLoadingMore = true);
+    }
+    try {
+      final page = await _repo.searchTerms(
+        widget.studySetId,
+        query: _searchQuery,
+        field: _searchField,
+        cursor: reset ? 0 : _searchCursor,
+        limit: 20,
+      );
+      setState(() {
+        if (reset) {
+          _searchResults = page.content;
+        } else {
+          _searchResults = [..._searchResults, ...page.content];
+        }
+        _searchCursor = page.nextCursor ?? 0;
+        _searchHasMore = page.hasMore;
+        _isSearching = false;
+        _isSearchLoadingMore = false;
+      });
+    } catch (_) {
+      setState(() {
+        _isSearching = false;
+        _isSearchLoadingMore = false;
+      });
+    }
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+      _searchResults = [];
+      _searchCursor = 0;
+      _searchHasMore = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return KeyboardListener(
@@ -126,6 +235,160 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
             return _buildContent(data);
           },
         ),
+      ),
+    );
+  }
+
+  // ── Search bar ─────────────────────────────────────────────────────────
+
+  Widget _buildSearchBar() {
+    return Container(
+      color: AppTheme.backgroundColor,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              style: const TextStyle(fontSize: 14),
+              decoration: InputDecoration(
+                hintText: 'Tìm thuật ngữ...',
+                prefixIcon: const Icon(Icons.search, size: 18,
+                    color: AppTheme.textSecondaryColor),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? GestureDetector(
+                        onTap: _clearSearch,
+                        child: const Icon(Icons.close, size: 18,
+                            color: AppTheme.textSecondaryColor),
+                      )
+                    : null,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                isDense: true,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Field picker
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _searchField,
+                isDense: true,
+                style: const TextStyle(
+                    fontSize: 12, color: AppTheme.textPrimaryColor),
+                dropdownColor: AppTheme.surfaceColor,
+                items: const [
+                  DropdownMenuItem(value: 'term', child: Text('Thuật ngữ')),
+                  DropdownMenuItem(value: 'definition', child: Text('Định nghĩa')),
+                ],
+                onChanged: (v) {
+                  if (v != null) _onSearchFieldChanged(v);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Search results ──────────────────────────────────────────────────────
+
+  Widget _buildSearchResults(bool isOwner) {
+    if (_isSearching) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_searchResults.isEmpty) {
+      return const Center(
+        child: Text(
+          'Không tìm thấy kết quả.',
+          style: TextStyle(color: AppTheme.textSecondaryColor),
+        ),
+      );
+    }
+
+    return NotificationListener<ScrollNotification>(
+      onNotification: (n) {
+        if (n is ScrollEndNotification &&
+            n.metrics.pixels >= n.metrics.maxScrollExtent - 80 &&
+            _searchHasMore &&
+            !_isSearchLoadingMore) {
+          _runSearch();
+        }
+        return false;
+      },
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        itemCount: _searchResults.length + (_searchHasMore ? 1 : 0),
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (context, index) {
+          if (index == _searchResults.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          }
+          final t = _searchResults[index];
+          return _TermGridCard(
+            term: t,
+            isLearned: _learnedIds.contains(t.id),
+            onToggleLearned: () => _toggleLearned(t),
+            onEdit: isOwner
+                ? () async {
+                    final result = await context.push<bool>(
+                        '/study-set/${widget.studySetId}/term-edit',
+                        extra: t);
+                    if (result == true) _retry();
+                  }
+                : null,
+            onDelete: isOwner
+                ? () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Xoá thuật ngữ?'),
+                        content: Text(
+                            'Bạn có chắc muốn xoá "${t.term}" không?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Huỷ')),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Xoá',
+                                style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      try {
+                        await _repo.deleteTerm(t.id);
+                        _retry();
+                        _runSearch(reset: true);
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Lỗi xoá: $e')),
+                          );
+                        }
+                      }
+                    }
+                  }
+                : null,
+          );
+        },
       ),
     );
   }
@@ -163,9 +426,12 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
     return SafeArea(
       child: Column(
         children: [
-          _buildHeader(context, detail),
+          _buildHeader(context, detail, detail.isOwner),
           _buildViewToggle(),
-          if (_viewMode == _ViewMode.flashcard)
+          _buildSearchBar(),
+          if (_searchQuery.isNotEmpty)
+            Expanded(child: _buildSearchResults(detail.isOwner))
+          else if (_viewMode == _ViewMode.flashcard)
             Expanded(child: _buildFlashcardSection(data, terms, currentTerm, isLearned))
           else
             Expanded(child: _buildGridSection(terms, detail.isOwner)),
@@ -176,7 +442,7 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
 
   // ── Header ─────────────────────────────────────────────────────────────
 
-  Widget _buildHeader(BuildContext context, StudySetDetail detail) {
+  Widget _buildHeader(BuildContext context, StudySetDetail detail, bool isOwner) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.backgroundColor,
@@ -195,15 +461,17 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
                     context.canPop() ? context.pop() : context.go('/home'),
               ),
               Expanded(child: const SizedBox()),
+              // Add term button — owner only
+              if (isOwner)
+                TextButton.icon(
+                  onPressed: () async {
+                    final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit');
+                    if (result == true) _retry();
+                  },
+                  icon: const Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
+                  label: const Text('Thêm từ', style: TextStyle(color: AppTheme.primaryColor)),
+                ),
               // Quiz button
-              TextButton.icon(
-                onPressed: () async {
-                  final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit');
-                  if (result == true) _retry();
-                },
-                icon: const Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
-                label: const Text('Thêm từ', style: TextStyle(color: AppTheme.primaryColor)),
-              ),
               TextButton.icon(
                 onPressed: () => context.go('/quiz/${widget.studySetId}'),
                 icon: const Icon(Icons.play_arrow,
@@ -213,6 +481,41 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
                   style: TextStyle(color: AppTheme.primaryColor),
                 ),
               ),
+              // Clone / more menu
+              if (_isCloning)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
+                  ),
+                )
+              else
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert,
+                      color: AppTheme.textSecondaryColor),
+                  color: AppTheme.surfaceColor,
+                  onSelected: (value) {
+                    if (value == 'clone') _cloneStudySet();
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'clone',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy_outlined,
+                              size: 18, color: AppTheme.textPrimaryColor),
+                          SizedBox(width: 8),
+                          Text('Clone bộ thẻ này',
+                              style:
+                                  TextStyle(color: AppTheme.textPrimaryColor)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               const SizedBox(width: 4),
             ],
           ),
@@ -468,38 +771,42 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
           term: t,
           isLearned: _learnedIds.contains(t.id),
           onToggleLearned: () => _toggleLearned(t),
-          onEdit: () async {
-            final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit', extra: t);
-            if (result == true) _retry();
-          },
-          onDelete: () async {
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Xoá thuật ngữ?'),
-                content: Text('Bạn có chắc muốn xoá "${t.term}" không?'),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('Xoá', style: TextStyle(color: Colors.red)),
-                  ),
-                ],
-              ),
-            );
-            if (confirmed == true) {
-              try {
-                await _repo.deleteTerm(t.id);
-                _retry();
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi xoá: $e')),
-                  );
+          onEdit: isOwner
+              ? () async {
+                  final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit', extra: t);
+                  if (result == true) _retry();
                 }
-              }
-            }
-          },
+              : null,
+          onDelete: isOwner
+              ? () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Xoá thuật ngữ?'),
+                      content: Text('Bạn có chắc muốn xoá "${t.term}" không?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Xoá', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    try {
+                      await _repo.deleteTerm(t.id);
+                      _retry();
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Lỗi xoá: $e')),
+                        );
+                      }
+                    }
+                  }
+                }
+              : null,
         )
             .animate()
             .fadeIn(delay: Duration(milliseconds: 40 * index))

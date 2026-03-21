@@ -68,6 +68,10 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Terminology App'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push('/search'),
+          ),
+          IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {},
           ),

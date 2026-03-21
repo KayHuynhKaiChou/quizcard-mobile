@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../models/user_model.dart';
 
@@ -136,6 +137,20 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await authenticatedPost('/auth/change-password', body: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+    if (response.statusCode != 200) {
+      final data = json.decode(response.body);
+      throw Exception(data['message'] ?? 'Failed to change password');
+    }
+  }
+
   Future<void> resendVerification(String email) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/auth/resend-verification'),
@@ -218,6 +233,47 @@ class AuthService extends ChangeNotifier {
           await _client.put(uri, headers: authHeaders, body: encoded);
     }
     return response;
+  }
+
+  /// Makes an authenticated multipart POST request (for file uploads).
+  Future<http.Response> authenticatedMultipartPost(
+    String path, {
+    required String fieldName,
+    required List<int> fileBytes,
+    required String fileName,
+    required String mimeType,
+  }) async {
+    final uri = Uri.parse('$_baseUrl$path');
+    var request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Bearer $_accessToken';
+    request.files.add(http.MultipartFile.fromBytes(
+      fieldName,
+      fileBytes,
+      filename: fileName,
+      contentType: MediaType.parse(mimeType),
+    ));
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    if (response.statusCode == 401) {
+      await _tryRefresh();
+      request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $_accessToken';
+      request.files.add(http.MultipartFile.fromBytes(
+        fieldName,
+        fileBytes,
+        filename: fileName,
+        contentType: MediaType.parse(mimeType),
+      ));
+      streamedResponse = await request.send();
+      response = await http.Response.fromStream(streamedResponse);
+    }
+    return response;
+  }
+
+  /// Updates the cached user model and notifies listeners.
+  Future<void> updateUser(UserModel user) async {
+    _user = user;
+    notifyListeners();
   }
 
   /// Makes an authenticated DELETE request with auto-refresh on 401.

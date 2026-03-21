@@ -99,7 +99,7 @@ class _StudySetsScreenState extends State<StudySetsScreen> {
           itemCount: sets.length,
           itemBuilder: (context, index) {
             final set = sets[index];
-            return _StudySetCard(set: set)
+            return _StudySetCard(set: set, onRefresh: _refresh)
                 .animate(delay: Duration(milliseconds: 50 * index))
                 .fadeIn()
                 .slideY(begin: 0.03);
@@ -110,16 +110,46 @@ class _StudySetsScreenState extends State<StudySetsScreen> {
   }
 }
 
-class _StudySetCard extends StatelessWidget {
+class _StudySetCard extends StatefulWidget {
   final StudySetSummary set;
-  const _StudySetCard({required this.set});
+  final VoidCallback onRefresh;
+  const _StudySetCard({required this.set, required this.onRefresh});
+
+  @override
+  State<_StudySetCard> createState() => _StudySetCardState();
+}
+
+class _StudySetCardState extends State<_StudySetCard> {
+  bool _isCloning = false;
+
+  Future<void> _clone() async {
+    setState(() => _isCloning = true);
+    try {
+      final repo = StudySetRepository(context.read<AuthService>());
+      await repo.cloneStudySet(widget.set.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã clone bộ thẻ thành công!')),
+        );
+        widget.onRefresh();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi clone: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCloning = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => context.go('/study-set/${set.id}'),
+        onTap: () => context.go('/study-set/${widget.set.id}'),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -140,25 +170,24 @@ class _StudySetCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(set.title,
+                    Text(widget.set.title,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 15)),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('${set.termsCount} terms',
+                        Text('${widget.set.termsCount} terms',
                             style: Theme.of(context).textTheme.bodyMedium),
-                        if (set.category != null) ...[
+                        if (widget.set.category != null) ...[
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.1),
+                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: Text(set.category!,
+                            child: Text(widget.set.category!,
                                 style: const TextStyle(
                                     color: AppTheme.primaryColor,
                                     fontSize: 11,
@@ -170,8 +199,37 @@ class _StudySetCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right,
-                  color: AppTheme.textSecondaryColor),
+              if (_isCloning)
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppTheme.primaryColor),
+                )
+              else
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert,
+                      color: AppTheme.textSecondaryColor),
+                  color: AppTheme.surfaceColor,
+                  onSelected: (value) {
+                    if (value == 'clone') _clone();
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'clone',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy_outlined,
+                              size: 18, color: AppTheme.textPrimaryColor),
+                          SizedBox(width: 8),
+                          Text('Clone',
+                              style:
+                                  TextStyle(color: AppTheme.textPrimaryColor)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

@@ -26,11 +26,13 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Backend may return displayName (preferred) or firstName/lastName
+    final displayNameRaw = json['displayName'] as String?;
     return UserModel(
       id: json['id']?.toString() ?? '',
       email: json['email'] ?? '',
-      firstName: json['firstName'],
-      lastName: json['lastName'],
+      firstName: displayNameRaw ?? json['firstName'],
+      lastName: displayNameRaw != null ? null : json['lastName'],
       avatarUrl: json['avatarUrl'],
       bio: json['bio'],
       emailVerified: json['emailVerified'] ?? false,
