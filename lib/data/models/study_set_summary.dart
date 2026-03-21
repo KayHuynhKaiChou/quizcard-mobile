@@ -4,6 +4,7 @@ class StudySetSummary {
   final String? description;
   final String? authorDisplayName;
   final String? authorAvatarUrl;
+  final String? userId;
   final String? category;
   final int termsCount;
   final int cloneCount;
@@ -15,6 +16,7 @@ class StudySetSummary {
     required this.description,
     required this.authorDisplayName,
     required this.authorAvatarUrl,
+    this.userId,
     required this.category,
     required this.termsCount,
     required this.cloneCount,
@@ -28,6 +30,7 @@ class StudySetSummary {
       description: json['description'] as String?,
       authorDisplayName: json['authorDisplayName'] as String?,
       authorAvatarUrl: json['authorAvatarUrl'] as String?,
+      userId: json['userId']?.toString(),
       category: json['category'] as String?,
       termsCount: (json['termsCount'] as num?)?.toInt() ?? 0,
       cloneCount: (json['cloneCount'] as num?)?.toInt() ?? 0,

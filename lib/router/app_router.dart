@@ -141,8 +141,10 @@ class AppRouter {
           ),
         ),
         GoRoute(
-          path: '/public_profile',
-          builder: (c, s) => const PublicProfileScreen(),
+          path: '/public_profile/:userId',
+          builder: (c, s) => PublicProfileScreen(
+            userId: s.pathParameters['userId']!,
+          ),
         ),
         GoRoute(
           path: '/notifications',

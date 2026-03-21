@@ -420,24 +420,30 @@ class _StudySetCard extends StatelessWidget {
         child: Row(
           children: [
             if (showAuthor)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CachedNetworkImage(
-                  imageUrl: set.authorAvatarUrl ?? '',
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                  placeholder: (ctx, url) => Container(
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: set.userId != null
+                    ? () => context.push('/public_profile/${set.userId}')
+                    : null,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: set.authorAvatarUrl ?? '',
                     width: 56,
                     height: 56,
-                    color: AppTheme.backgroundColor,
-                  ),
-                  errorWidget: (ctx, url, err) => Container(
-                    width: 56,
-                    height: 56,
-                    color: AppTheme.backgroundColor,
-                    child: const Icon(Icons.person,
-                        color: AppTheme.textSecondaryColor),
+                    fit: BoxFit.cover,
+                    placeholder: (ctx, url) => Container(
+                      width: 56,
+                      height: 56,
+                      color: AppTheme.backgroundColor,
+                    ),
+                    errorWidget: (ctx, url, err) => Container(
+                      width: 56,
+                      height: 56,
+                      color: AppTheme.backgroundColor,
+                      child: const Icon(Icons.person,
+                          color: AppTheme.textSecondaryColor),
+                    ),
                   ),
                 ),
               )
@@ -461,11 +467,22 @@ class _StudySetCard extends StatelessWidget {
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   if (showAuthor && set.authorDisplayName != null) ...[
                     const SizedBox(height: 2),
-                    Text(set.authorDisplayName!,
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: set.userId != null
+                          ? () => context.push('/public_profile/${set.userId}')
+                          : null,
+                      child: Text(
+                        set.authorDisplayName!,
                         style: TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textSecondaryColor,
-                            fontWeight: FontWeight.w500)),
+                          fontSize: 12,
+                          color: set.userId != null
+                              ? AppTheme.primaryColor.withValues(alpha: 0.9)
+                              : AppTheme.textSecondaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 4),
                   Row(

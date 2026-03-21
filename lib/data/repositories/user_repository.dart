@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../models/user_model.dart';
 import '../models/page_response.dart';
+import '../models/public_profile_model.dart';
 import '../models/study_set_summary.dart';
 import '../services/auth_service.dart';
 
@@ -62,9 +63,25 @@ class UserRepository {
     return UserModel.fromJson(jsonDecode(response.body));
   }
 
-  Future<Map<String, dynamic>> getPublicProfile(String userId) async {
+  Future<PublicProfileModel> getPublicProfile(String userId) async {
     final response = await _auth.authenticatedGet('/users/$userId/profile');
     if (response.statusCode != 200) throw Exception('Failed to load profile');
-    return jsonDecode(response.body);
+    return PublicProfileModel.fromJson(jsonDecode(response.body));
+  }
+
+  Future<PageResponse<StudySetSummary>> getUserPublicStudySets(
+    String userId, {
+    int page = 0,
+    int size = 12,
+  }) async {
+    final response = await _auth.authenticatedGet(
+      '/users/$userId/study-sets',
+      queryParams: {'page': page.toString(), 'size': size.toString()},
+    );
+    if (response.statusCode != 200) throw Exception('Failed to load study sets');
+    return PageResponse<StudySetSummary>.fromJson(
+      jsonDecode(response.body),
+      StudySetSummary.fromJson,
+    );
   }
 }
