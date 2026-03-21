@@ -248,44 +248,60 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: const TextStyle(fontSize: 14),
-              decoration: InputDecoration(
-                hintText: 'Tìm thuật ngữ...',
-                prefixIcon: const Icon(Icons.search, size: 18,
-                    color: AppTheme.textSecondaryColor),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? GestureDetector(
-                        onTap: _clearSearch,
-                        child: const Icon(Icons.close, size: 18,
-                            color: AppTheme.textSecondaryColor),
-                      )
-                    : null,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                isDense: true,
+            child: SizedBox(
+              height: 44,
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Tìm thuật ngữ...',
+                  prefixIcon: const Icon(Icons.search, size: 18,
+                      color: AppTheme.textSecondaryColor),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? GestureDetector(
+                          onTap: _clearSearch,
+                          child: const Icon(Icons.close, size: 18,
+                              color: AppTheme.textSecondaryColor),
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  filled: true,
+                  fillColor: AppTheme.surfaceColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.primaryColor),
+                  ),
+                ),
               ),
             ),
           ),
           const SizedBox(width: 8),
           // Field picker
           Container(
+            height: 44,
             decoration: BoxDecoration(
               color: AppTheme.surfaceColor,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 10),
+            alignment: Alignment.center,
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _searchField,
                 isDense: true,
                 style: const TextStyle(
-                    fontSize: 12, color: AppTheme.textPrimaryColor),
+                    fontSize: 13, color: AppTheme.textPrimaryColor),
                 dropdownColor: AppTheme.surfaceColor,
+                icon: const Icon(Icons.arrow_drop_down, color: AppTheme.textSecondaryColor, size: 20),
                 items: const [
                   DropdownMenuItem(value: 'term', child: Text('Thuật ngữ')),
                   DropdownMenuItem(value: 'definition', child: Text('Định nghĩa')),
@@ -342,49 +358,12 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
           final t = _searchResults[index];
           return _TermGridCard(
             term: t,
-            isLearned: _learnedIds.contains(t.id),
-            onToggleLearned: () => _toggleLearned(t),
             onEdit: isOwner
                 ? () async {
                     final result = await context.push<bool>(
                         '/study-set/${widget.studySetId}/term-edit',
                         extra: t);
                     if (result == true) _retry();
-                  }
-                : null,
-            onDelete: isOwner
-                ? () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Xoá thuật ngữ?'),
-                        content: Text(
-                            'Bạn có chắc muốn xoá "${t.term}" không?'),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Huỷ')),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Xoá',
-                                style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true) {
-                      try {
-                        await _repo.deleteTerm(t.id);
-                        _retry();
-                        _runSearch(reset: true);
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Lỗi xoá: $e')),
-                          );
-                        }
-                      }
-                    }
                   }
                 : null,
           );
@@ -769,42 +748,10 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
         final t = terms[index];
         return _TermGridCard(
           term: t,
-          isLearned: _learnedIds.contains(t.id),
-          onToggleLearned: () => _toggleLearned(t),
           onEdit: isOwner
               ? () async {
                   final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit', extra: t);
                   if (result == true) _retry();
-                }
-              : null,
-          onDelete: isOwner
-              ? () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Xoá thuật ngữ?'),
-                      content: Text('Bạn có chắc muốn xoá "${t.term}" không?'),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Xoá', style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    try {
-                      await _repo.deleteTerm(t.id);
-                      _retry();
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Lỗi xoá: $e')),
-                        );
-                      }
-                    }
-                  }
                 }
               : null,
         )
@@ -1139,17 +1086,11 @@ class _CardFace extends StatelessWidget {
 
 class _TermGridCard extends StatelessWidget {
   final Term term;
-  final bool isLearned;
-  final VoidCallback onToggleLearned;
   final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
 
   const _TermGridCard({
     required this.term,
-    required this.isLearned,
-    required this.onToggleLearned,
     this.onEdit,
-    this.onDelete,
   });
 
   @override
@@ -1160,9 +1101,7 @@ class _TermGridCard extends StatelessWidget {
         color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isLearned
-              ? AppTheme.primaryColor.withValues(alpha: 0.4)
-              : Colors.white.withValues(alpha: 0.08),
+          color: Colors.white.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
@@ -1208,36 +1147,13 @@ class _TermGridCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (onEdit != null)
-                GestureDetector(
-                  onTap: onEdit,
-                  child: const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: Icon(Icons.edit_outlined, color: AppTheme.textSecondaryColor, size: 20),
-                  ),
-                ),
-              if (onDelete != null)
-                GestureDetector(
-                  onTap: onDelete,
-                  child: const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                  ),
-                ),
-              GestureDetector(
-                onTap: onToggleLearned,
-                child: Icon(
-                  isLearned ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: isLearned ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
-                  size: 22,
-                ),
-              ),
-            ],
-          ),
+          if (onEdit != null) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onEdit,
+              child: const Icon(Icons.edit_outlined, color: AppTheme.textSecondaryColor, size: 20),
+            ),
+          ],
         ],
       ),
     );

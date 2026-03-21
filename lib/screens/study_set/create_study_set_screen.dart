@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -137,6 +138,53 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
     }
   }
 
+  Widget _buildQuizletInput({
+    required TextEditingController controller,
+    required String labelText,
+    Widget? trailingLabel,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          maxLines: null,
+          style: const TextStyle(fontSize: 18, color: Colors.white),
+          decoration: const InputDecoration(
+            filled: false,
+            fillColor: Colors.transparent,
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(vertical: 8),
+            border: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 2),
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 2),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white, width: 3),
+            ),
+            // Override margins forced by appTheme
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              labelText,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white70),
+            ),
+            if (trailingLabel != null) trailingLabel,
+          ],
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,58 +247,56 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
             ..._terms.asMap().entries.map((entry) {
               final index = entry.key;
               final t = entry.value;
-              return Card(
-                elevation: 0,
-                color: AppTheme.surfaceColor,
+              return Container(
                 margin: const EdgeInsets.only(bottom: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.08),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+                child: Slidable(
+                  key: ObjectKey(t),
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    extentRatio: 0.2,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('${index + 1}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 20),
-                            onPressed: () => _removeTerm(index),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          )
-                        ],
-                      ),
-                      const Divider(height: 24),
-                      TextField(
-                        controller: t.termCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Term',
-                          border: UnderlineInputBorder(),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.white24)),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: t.defCtrl,
-                        maxLines: null,
-                        decoration: const InputDecoration(
-                          labelText: 'Definition',
-                          border: UnderlineInputBorder(),
-                          enabledBorder: UnderlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.white24)),
-                        ),
+                      CustomSlidableAction(
+                        onPressed: (_) {
+                          if (_terms.length > 2) {
+                            _removeTerm(index);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('A study set needs at least two terms.')),
+                            );
+                          }
+                        },
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.redAccent,
+                        child: const Icon(Icons.delete, size: 28),
                       ),
                     ],
+                  ),
+                  child: Card(
+                    elevation: 0,
+                    color: AppTheme.surfaceColor,
+                    margin: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _buildQuizletInput(
+                            controller: t.termCtrl,
+                            labelText: 'Term',
+                          ),
+                          const SizedBox(height: 24),
+                          _buildQuizletInput(
+                            controller: t.defCtrl,
+                            labelText: 'Definition',
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               );
