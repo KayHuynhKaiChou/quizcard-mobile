@@ -642,7 +642,7 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
         children: [
           Expanded(
             child: _ViewToggleButton(
-              label: 'Flashcard',
+              label: 'Thẻ ghi nhớ',
               icon: Icons.style_outlined,
               isSelected: _viewMode == _ViewMode.flashcard,
               onTap: () => setState(() => _viewMode = _ViewMode.flashcard),
@@ -680,6 +680,7 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
 
         // Progress bar
         _buildProgressBar(terms),
+        const SizedBox(height: 16),
 
         // Flashcard
         Expanded(
@@ -724,14 +725,14 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
               icon: isLearned
                   ? Icons.check_circle
                   : Icons.radio_button_unchecked,
-              label: isLearned ? 'Đã thuộc' : 'Đánh dấu',
+              label: isLearned ? 'Đã thuộc' : 'Đánh dấu thuộc',
               isActive: isLearned,
               onTap: () => _toggleLearned(currentTerm),
             ),
           const Spacer(),
           if (_learnedIds.isNotEmpty)
             Text(
-              '${_learnedIds.length}/${data.detail.termsCount} thuộc',
+              '${_learnedIds.length}/${data.detail.termsCount} đã thuộc',
               style: const TextStyle(
                   color: AppTheme.primaryColor,
                   fontSize: 12,

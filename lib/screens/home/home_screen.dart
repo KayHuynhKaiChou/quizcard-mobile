@@ -487,7 +487,7 @@ class _StudySetCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('${set.termsCount} thẻ',
+                      Text('${set.termsCount} thuật ngữ',
                           style: Theme.of(context).textTheme.bodyMedium),
                       if (set.category != null) ...[
                         const SizedBox(width: 8),

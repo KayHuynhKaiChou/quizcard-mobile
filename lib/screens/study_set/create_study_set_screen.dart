@@ -64,7 +64,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('A study set needs at least two terms.')),
+        const SnackBar(content: Text('Một bộ thẻ cần có ít nhất hai thuật ngữ.')),
       );
     }
   }
@@ -89,7 +89,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title is required.')),
+        const SnackBar(content: Text('Vui lòng nhập tiêu đề.')),
       );
       return;
     }
@@ -106,7 +106,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
     if (validTerms.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide at least two complete terms (term + definition).')),
+            content: Text('Vui lòng nhập ít nhất hai thẻ hoàn chỉnh (thuật ngữ + định nghĩa).')),
       );
       return;
     }
@@ -121,14 +121,14 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Study set created successfully!')),
+          const SnackBar(content: Text('Tạo bộ thẻ thành công!')),
         );
         context.pop(); // Pop this screen, `StudySetsScreen` will refresh
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating study set: $e')),
+          SnackBar(content: Text('Lỗi khi tạo bộ thẻ: $e')),
         );
       }
     } finally {
@@ -189,7 +189,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Study Set'),
+        title: const Text('Tạo bộ thẻ mới'),
         actions: [
           _isSaving
               ? const Padding(
@@ -201,7 +201,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
                 )
               : TextButton(
                   onPressed: _save,
-                  child: const Text('Done',
+                  child: const Text('Hoàn tất',
                       style: TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
@@ -216,8 +216,8 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
             TextField(
               controller: _titleCtrl,
               decoration: const InputDecoration(
-                labelText: 'Title',
-                hintText: 'e.g., Biology 101, French Vocabulary...',
+                labelText: 'Tiêu đề',
+                hintText: 'Nhập tiêu đề bộ thẻ...',
               ),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
@@ -226,19 +226,20 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
               controller: _descCtrl,
               maxLength: 250,
               decoration: const InputDecoration(
-                labelText: 'Description (optional)',
+                labelText: 'Mô tả',
+                hintText: 'Thêm mô tả cho bộ thẻ...',
               ),
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Terms',
+                Text('Thuật ngữ',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
                         ?.copyWith(fontWeight: FontWeight.bold)),
-                Text('${_terms.length} terms',
+                Text('${_terms.length} thuật ngữ',
                     style: const TextStyle(color: AppTheme.textSecondaryColor)),
               ],
             ),
@@ -261,7 +262,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
                             _removeTerm(index);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('A study set needs at least two terms.')),
+                              const SnackBar(content: Text('Một bộ thẻ cần có ít nhất hai thuật ngữ.')),
                             );
                           }
                         },
@@ -287,12 +288,12 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
                         children: [
                           _buildQuizletInput(
                             controller: t.termCtrl,
-                            labelText: 'Term',
+                            labelText: 'Thuật ngữ',
                           ),
                           const SizedBox(height: 24),
                           _buildQuizletInput(
                             controller: t.defCtrl,
-                            labelText: 'Definition',
+                            labelText: 'Nghĩa / Định nghĩa',
                           ),
                         ],
                       ),
@@ -362,7 +363,7 @@ class _CreateStudySetScreenState extends State<CreateStudySetScreen> {
                       borderRadius: BorderRadius.circular(12)),
                   side: const BorderSide(color: AppTheme.primaryColor),
                 ),
-                label: const Text('Add Term',
+                label: const Text('Thêm thuật ngữ',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),

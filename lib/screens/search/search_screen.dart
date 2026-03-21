@@ -271,7 +271,7 @@ class _SearchResultCardState extends State<_SearchResultCard> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('${widget.set.termsCount} thẻ',
+                      Text('${widget.set.termsCount} thuật ngữ',
                           style: Theme.of(context).textTheme.bodyMedium),
                       if (widget.set.category != null) ...[
                         const SizedBox(width: 8),
