@@ -38,8 +38,9 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
   List<Term> _shuffledTerms = [];
   final Set<String> _learnedIds = {};
 
-  // Clone state
+  // Clone/delete state
   bool _isCloning = false;
+  bool _isDeleting = false;
 
   // Search state
   final TextEditingController _searchController = TextEditingController();
@@ -127,11 +128,12 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
   Future<void> _cloneStudySet() async {
     setState(() => _isCloning = true);
     try {
-      await _repo.cloneStudySet(widget.studySetId);
+      final cloned = await _repo.cloneStudySet(widget.studySetId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Đã clone bộ thẻ thành công!')),
         );
+        context.pushReplacement('/study-set/${cloned.id}');
       }
     } catch (e) {
       if (mounted) {
@@ -141,6 +143,50 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _isCloning = false);
+    }
+  }
+
+  Future<void> _deleteStudySet() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('Xóa bộ thẻ?'),
+        content: const Text(
+            'Xóa bộ thẻ này? Các thuật ngữ sẽ bị xóa theo.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppTheme.textSecondaryColor)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Xóa',
+                style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await _repo.delete(widget.studySetId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã xóa bộ thẻ')),
+        );
+        context.canPop() ? context.pop() : context.go('/studyset');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi xóa: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
     }
   }
 
@@ -461,7 +507,7 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
                 ),
               ),
               // Clone / more menu
-              if (_isCloning)
+              if (_isCloning || _isDeleting)
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: SizedBox(
@@ -478,22 +524,43 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
                   color: AppTheme.surfaceColor,
                   onSelected: (value) {
                     if (value == 'clone') _cloneStudySet();
+                    if (value == 'delete') _deleteStudySet();
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(
-                      value: 'clone',
-                      child: Row(
-                        children: [
-                          Icon(Icons.copy_outlined,
-                              size: 18, color: AppTheme.textPrimaryColor),
-                          SizedBox(width: 8),
-                          Text('Clone bộ thẻ này',
-                              style:
-                                  TextStyle(color: AppTheme.textPrimaryColor)),
-                        ],
-                      ),
-                    ),
-                  ],
+                  itemBuilder: (_) {
+                    // Clone is visible for own sets OR public sets by others.
+                    // Hide clone for private sets owned by others.
+                    final canClone = isOwner ||
+                        detail.visibility.toUpperCase() == 'PUBLIC';
+                    return [
+                      if (canClone)
+                        const PopupMenuItem(
+                          value: 'clone',
+                          child: Row(
+                            children: [
+                              Icon(Icons.copy_outlined,
+                                  size: 18, color: AppTheme.textPrimaryColor),
+                              SizedBox(width: 8),
+                              Text('Clone bộ thẻ này',
+                                  style: TextStyle(
+                                      color: AppTheme.textPrimaryColor)),
+                            ],
+                          ),
+                        ),
+                      if (isOwner)
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_outline,
+                                  size: 18, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Xóa bộ thẻ',
+                                  style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                    ];
+                  },
                 ),
               const SizedBox(width: 4),
             ],

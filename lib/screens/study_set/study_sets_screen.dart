@@ -126,12 +126,13 @@ class _StudySetCardState extends State<_StudySetCard> {
     setState(() => _isCloning = true);
     try {
       final repo = StudySetRepository(context.read<AuthService>());
-      await repo.cloneStudySet(widget.set.id);
+      final cloned = await repo.cloneStudySet(widget.set.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Đã clone bộ thẻ thành công!')),
         );
         widget.onRefresh();
+        context.push('/study-set/${cloned.id}');
       }
     } catch (e) {
       if (mounted) {

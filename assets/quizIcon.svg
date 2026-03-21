@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="quizCardFillGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Back card 2 (furthest) -->
+  <path d="M5.5 2H19C20.1 2 21 2.9 21 4V17.5" fill="#3730a3" opacity="0.5"/>
+
+  <!-- Back card 1 -->
+  <path d="M4 5H17C18.1 5 19 5.9 19 7V20" fill="#4f46e5" opacity="0.7"/>
+
+  <!-- Front card -->
+  <rect x="2" y="8" width="15" height="14" rx="2.5" fill="url(#quizCardFillGradient)"/>
+
+  <!-- Text lines -->
+  <rect x="5" y="12" width="9" height="1.5" rx="0.75" fill="white" opacity="0.9"/>
+  <rect x="5" y="16" width="6" height="1.5" rx="0.75" fill="white" opacity="0.7"/>
+</svg>

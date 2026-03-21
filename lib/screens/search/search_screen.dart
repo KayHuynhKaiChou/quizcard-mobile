@@ -187,14 +187,48 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-class _SearchResultCard extends StatelessWidget {
+class _SearchResultCard extends StatefulWidget {
   final StudySetSummary set;
   const _SearchResultCard({required this.set});
 
   @override
+  State<_SearchResultCard> createState() => _SearchResultCardState();
+}
+
+class _SearchResultCardState extends State<_SearchResultCard> {
+  bool _isCloning = false;
+
+  // Show clone for own sets OR public sets by others; hide for private sets by others.
+  bool get _canClone =>
+      widget.set.isOwner ||
+      widget.set.visibility.toUpperCase() == 'PUBLIC';
+
+  Future<void> _clone() async {
+    setState(() => _isCloning = true);
+    try {
+      final repo = StudySetRepository(context.read<AuthService>());
+      final cloned = await repo.cloneStudySet(widget.set.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã clone bộ thẻ thành công!')),
+        );
+        context.push('/study-set/${cloned.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi clone: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCloning = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.go('/study-set/${set.id}'),
+      onTap: () => context.go('/study-set/${widget.set.id}'),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -220,14 +254,14 @@ class _SearchResultCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    set.title,
+                    widget.set.title,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  if (set.authorDisplayName != null) ...[
+                  if (widget.set.authorDisplayName != null) ...[
                     const SizedBox(height: 2),
                     Text(
-                      set.authorDisplayName!,
+                      widget.set.authorDisplayName!,
                       style: const TextStyle(
                           fontSize: 12,
                           color: AppTheme.textSecondaryColor,
@@ -237,20 +271,19 @@ class _SearchResultCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('${set.termsCount} thẻ',
+                      Text('${widget.set.termsCount} thẻ',
                           style: Theme.of(context).textTheme.bodyMedium),
-                      if (set.category != null) ...[
+                      if (widget.set.category != null) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color:
-                                AppTheme.primaryColor.withValues(alpha: 0.1),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            set.category!,
+                            widget.set.category!,
                             style: const TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: 10,
@@ -263,8 +296,23 @@ class _SearchResultCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: AppTheme.textSecondaryColor),
+            if (_canClone)
+              _isCloning
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppTheme.primaryColor),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.copy_outlined,
+                          size: 20, color: AppTheme.textSecondaryColor),
+                      onPressed: _clone,
+                      tooltip: 'Clone',
+                    )
+            else
+              const Icon(Icons.chevron_right,
+                  color: AppTheme.textSecondaryColor),
           ],
         ),
       ),

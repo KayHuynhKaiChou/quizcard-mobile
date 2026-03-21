@@ -9,6 +9,8 @@ class StudySetSummary {
   final int termsCount;
   final int cloneCount;
   final double ratingAvg;
+  final String visibility;
+  final bool isOwner;
 
   const StudySetSummary({
     required this.id,
@@ -21,6 +23,8 @@ class StudySetSummary {
     required this.termsCount,
     required this.cloneCount,
     required this.ratingAvg,
+    this.visibility = 'PUBLIC',
+    this.isOwner = false,
   });
 
   factory StudySetSummary.fromJson(Map<String, dynamic> json) {
@@ -35,6 +39,8 @@ class StudySetSummary {
       termsCount: (json['termsCount'] as num?)?.toInt() ?? 0,
       cloneCount: (json['cloneCount'] as num?)?.toInt() ?? 0,
       ratingAvg: (json['ratingAvg'] as num?)?.toDouble() ?? 0,
+      visibility: (json['visibility'] as String?) ?? 'PUBLIC',
+      isOwner: json['isOwner'] as bool? ?? json['owner'] as bool? ?? false,
     );
   }
 }
