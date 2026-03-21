@@ -1,12 +1,12 @@
 class QuizConfig {
   final String studySetId;
-  final String quizType; // MULTIPLE_CHOICE, TRUE_FALSE, FILL_BLANK
+  final String quizType; // multiple_choice, true_false, fill_blank
   final int questionCount;
   final int? timeLimitSeconds;
 
   QuizConfig({
     required this.studySetId,
-    this.quizType = 'MULTIPLE_CHOICE',
+    this.quizType = 'multiple_choice',
     this.questionCount = 10,
     this.timeLimitSeconds,
   });
@@ -37,8 +37,8 @@ class QuizQuestion {
   factory QuizQuestion.fromJson(Map<String, dynamic> json) {
     return QuizQuestion(
       id: json['id']?.toString() ?? '',
-      questionText: json['questionText'] ?? '',
-      type: json['type'] ?? 'MULTIPLE_CHOICE',
+      questionText: json['question'] ?? json['questionText'] ?? '',
+      type: json['type'] ?? 'multiple_choice',
       options: List<String>.from(json['options'] ?? []),
       correctAnswer: json['correctAnswer'] ?? '',
     );
@@ -64,7 +64,7 @@ class GeneratedQuiz {
     return GeneratedQuiz(
       quizId: json['quizId']?.toString() ?? '',
       studySetId: json['studySetId']?.toString() ?? '',
-      quizType: json['quizType'] ?? 'MULTIPLE_CHOICE',
+      quizType: json['quizType'] ?? 'multiple_choice',
       questions: (json['questions'] as List?)
           ?.map((e) => QuizQuestion.fromJson(e as Map<String, dynamic>))
           .toList() ?? [],
@@ -185,7 +185,7 @@ class QuestionDetail {
 
   factory QuestionDetail.fromJson(Map<String, dynamic> json) {
     return QuestionDetail(
-      questionText: json['questionText'] ?? '',
+      questionText: json['term'] ?? json['questionText'] ?? '',
       userAnswer: json['userAnswer'] ?? '',
       correctAnswer: json['correctAnswer'] ?? '',
       isCorrect: json['correct'] ?? false,

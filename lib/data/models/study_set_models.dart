@@ -54,7 +54,7 @@ class StudySetDetail {
       authorId: json['authorId']?.toString() ?? '',
       authorName: json['authorName'] ?? '',
       authorAvatarUrl: json['authorAvatarUrl'],
-      isOwner: json['owner'] ?? false,
+      isOwner: json['owner'] ?? json['isOwner'] ?? false,
       isBookmarked: json['bookmarked'] ?? false,
       userRating: json['userRating'],
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),

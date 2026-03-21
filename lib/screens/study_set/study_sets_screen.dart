@@ -6,52 +6,32 @@ import 'package:provider/provider.dart';
 import '../../data/models/page_response.dart';
 import '../../data/models/study_set_summary.dart';
 import '../../data/repositories/study_set_repository.dart';
-import '../../data/repositories/user_repository.dart';
+// import '../../data/repositories/user_repository.dart'; // No longer needed
 import '../../data/services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
-class LibraryScreen extends StatefulWidget {
-  const LibraryScreen({super.key});
+class StudySetsScreen extends StatefulWidget {
+  const StudySetsScreen({super.key});
 
   @override
-  State<LibraryScreen> createState() => _LibraryScreenState();
+  State<StudySetsScreen> createState() => _StudySetsScreenState();
 }
 
-class _LibraryScreenState extends State<LibraryScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabCtrl;
+class _StudySetsScreenState extends State<StudySetsScreen> {
   late StudySetRepository _studySetRepo;
-  late UserRepository _userRepo;
-
   Future<PageResponse<StudySetSummary>>? _mySetsFuture;
-  Future<PageResponse<StudySetSummary>>? _bookmarksFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabCtrl = TabController(length: 2, vsync: this);
-  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final auth = context.read<AuthService>();
     _studySetRepo = StudySetRepository(auth);
-    _userRepo = UserRepository(auth);
     _mySetsFuture ??= _studySetRepo.getMyStudySets();
-    _bookmarksFuture ??= _userRepo.getBookmarks();
-  }
-
-  @override
-  void dispose() {
-    _tabCtrl.dispose();
-    super.dispose();
   }
 
   void _refresh() {
     setState(() {
       _mySetsFuture = _studySetRepo.getMyStudySets();
-      _bookmarksFuture = _userRepo.getBookmarks();
     });
   }
 
@@ -59,29 +39,13 @@ class _LibraryScreenState extends State<LibraryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Library'),
-        bottom: TabBar(
-          controller: _tabCtrl,
-          indicatorColor: AppTheme.primaryColor,
-          labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondaryColor,
-          tabs: const [
-            Tab(text: 'My Sets'),
-            Tab(text: 'Bookmarked'),
-          ],
-        ),
+        title: const Text('Study Sets'),
       ),
-      body: TabBarView(
-        controller: _tabCtrl,
-        children: [
-          _buildSetList(_mySetsFuture),
-          _buildSetList(_bookmarksFuture),
-        ],
-      ),
+      body: _buildSetList(_mySetsFuture),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppTheme.primaryColor,
         onPressed: () {
-          // TODO: Navigate to create study set
+          context.push('/create-set').then((_) => _refresh());
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),

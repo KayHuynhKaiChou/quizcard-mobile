@@ -196,15 +196,14 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
               ),
               Expanded(child: const SizedBox()),
               // Quiz button
-              if (detail.isOwner)
-                TextButton.icon(
-                  onPressed: () async {
-                    final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit');
-                    if (result == true) _retry();
-                  },
-                  icon: const Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
-                  label: const Text('Thêm từ', style: TextStyle(color: AppTheme.primaryColor)),
-                ),
+              TextButton.icon(
+                onPressed: () async {
+                  final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit');
+                  if (result == true) _retry();
+                },
+                icon: const Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
+                label: const Text('Thêm từ', style: TextStyle(color: AppTheme.primaryColor)),
+              ),
               TextButton.icon(
                 onPressed: () => context.go('/quiz/${widget.studySetId}'),
                 icon: const Icon(Icons.play_arrow,
@@ -469,10 +468,38 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
           term: t,
           isLearned: _learnedIds.contains(t.id),
           onToggleLearned: () => _toggleLearned(t),
-          onEdit: isOwner ? () async {
+          onEdit: () async {
             final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit', extra: t);
             if (result == true) _retry();
-          } : null,
+          },
+          onDelete: () async {
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Xoá thuật ngữ?'),
+                content: Text('Bạn có chắc muốn xoá "${t.term}" không?'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Huỷ')),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Xoá', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true) {
+              try {
+                await _repo.deleteTerm(t.id);
+                _retry();
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi xoá: $e')),
+                  );
+                }
+              }
+            }
+          },
         )
             .animate()
             .fadeIn(delay: Duration(milliseconds: 40 * index))
@@ -808,12 +835,14 @@ class _TermGridCard extends StatelessWidget {
   final bool isLearned;
   final VoidCallback onToggleLearned;
   final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const _TermGridCard({
     required this.term,
     required this.isLearned,
     required this.onToggleLearned,
     this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -874,6 +903,7 @@ class _TermGridCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (onEdit != null)
                 GestureDetector(
@@ -883,13 +913,19 @@ class _TermGridCard extends StatelessWidget {
                     child: Icon(Icons.edit_outlined, color: AppTheme.textSecondaryColor, size: 20),
                   ),
                 ),
+              if (onDelete != null)
+                GestureDetector(
+                  onTap: onDelete,
+                  child: const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                  ),
+                ),
               GestureDetector(
                 onTap: onToggleLearned,
                 child: Icon(
                   isLearned ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: isLearned
-                      ? AppTheme.primaryColor
-                      : AppTheme.textSecondaryColor,
+                  color: isLearned ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
                   size: 22,
                 ),
               ),

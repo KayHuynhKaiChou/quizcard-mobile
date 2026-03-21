@@ -15,7 +15,7 @@ class BottomNavShell extends StatelessWidget {
         onTap: (int idx) => _onItemTapped(idx, context),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), activeIcon: Icon(Icons.explore), label: 'Explore'),
+          BottomNavigationBarItem(icon: Icon(Icons.library_books_outlined), activeIcon: Icon(Icons.library_books), label: 'Study Sets'),
           BottomNavigationBarItem(icon: Icon(Icons.emoji_events_outlined), activeIcon: Icon(Icons.emoji_events), label: 'Leaderboard'),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
         ],
@@ -26,7 +26,7 @@ class BottomNavShell extends StatelessWidget {
   static int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/explore')) return 1;
+    if (location.startsWith('/studyset')) return 1;
     if (location.startsWith('/leaderboard')) return 2;
     if (location.startsWith('/profile')) return 3;
     return 0;
@@ -37,7 +37,7 @@ class BottomNavShell extends StatelessWidget {
       case 0:
         context.go('/home');
       case 1:
-        context.go('/explore');
+        context.go('/studyset');
       case 2:
         context.go('/leaderboard');
       case 3:

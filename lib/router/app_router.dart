@@ -18,13 +18,13 @@ import '../screens/onboarding/progress_tracking_screen.dart';
 
 // Main screens
 import '../screens/home/home_screen.dart';
-import '../screens/home/global_stats_screen.dart';
 import '../screens/home/leaderboard_screen.dart';
-import '../screens/library/library_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
+import '../screens/study_set/study_sets_screen.dart';
 
 // Study Set screens
 import '../screens/study_set/study_set_detail_screen.dart';
+import '../screens/study_set/create_study_set_screen.dart';
 import '../screens/decks/create_term_screen.dart';
 import '../screens/decks/flashcard_study_screen.dart';
 import '../data/models/study_set_models.dart';
@@ -108,6 +108,10 @@ class AppRouter {
           ),
         ),
         GoRoute(
+          path: '/create-set',
+          builder: (c, s) => const CreateStudySetScreen(),
+        ),
+        GoRoute(
           path: '/study',
           builder: (c, s) => const FlashcardStudyScreen(),
         ),
@@ -148,17 +152,14 @@ class AppRouter {
           routes: [
             GoRoute(path: '/home', builder: (c, s) => const HomeScreen()),
             GoRoute(
-              path: '/explore',
-              builder: (c, s) => const GlobalStatsScreen(),
+              path: '/studyset',
+              builder: (c, s) => const StudySetsScreen(),
             ),
             GoRoute(
               path: '/leaderboard',
               builder: (c, s) => const LeaderboardScreen(),
             ),
-            GoRoute(
-              path: '/library',
-              builder: (c, s) => const LibraryScreen(),
-            ),
+
             GoRoute(
               path: '/profile',
               builder: (c, s) => const UserProfileScreen(),

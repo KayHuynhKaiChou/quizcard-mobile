@@ -53,40 +53,43 @@ class QuizResultsScreen extends StatelessWidget {
                   // Score section
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-                    child: Stack(
-                      alignment: Alignment.center,
+                    child: Column(
                       children: [
-                        const Positioned(top: 0,    left: 20,  child: Icon(Icons.star,        color: Color(0xFFEAB308), size: 28)),
-                        const Positioned(top: 20,   right: 30, child: Icon(Icons.celebration, color: Color(0xFFEC4899), size: 22)),
-                        const Positioned(bottom: 20, left: 40, child: Icon(Icons.hotel_class, color: Color(0xFF22C55E), size: 18)),
-                        const Positioned(bottom: 10, right: 50, child: Icon(Icons.stars,      color: AppTheme.primaryColor, size: 28)),
-                        Column(children: [
-                          SizedBox(
-                            width: 180, height: 180,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox.expand(
-                                  child: CircularProgressIndicator(
-                                    value: pct / 100,
-                                    strokeWidth: 12,
-                                    backgroundColor: Colors.white.withValues(alpha: 0.08),
-                                    valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
-                                    strokeCap: StrokeCap.round,
+                        Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            const Positioned(top: -10, left: -20, child: Icon(Icons.star, color: Color(0xFFEAB308), size: 28)),
+                            const Positioned(top: 20, right: -15, child: Icon(Icons.celebration, color: Color(0xFFEC4899), size: 22)),
+                            const Positioned(bottom: 10, left: -10, child: Icon(Icons.hotel_class, color: Color(0xFF22C55E), size: 18)),
+                            const Positioned(bottom: -5, right: -10, child: Icon(Icons.stars, color: AppTheme.primaryColor, size: 28)),
+                            SizedBox(
+                              width: 180, height: 180,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  SizedBox.expand(
+                                    child: CircularProgressIndicator(
+                                      value: pct / 100,
+                                      strokeWidth: 12,
+                                      backgroundColor: Colors.white.withValues(alpha: 0.08),
+                                      valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+                                      strokeCap: StrokeCap.round,
+                                    ),
                                   ),
-                                ),
-                                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                  Text('${pct.round()}%', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.bold)),
-                                  const Text('Score', style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 14)),
-                                ]),
-                              ],
-                            ),
-                          ).animate().scale(delay: 300.ms, duration: 600.ms, curve: Curves.elasticOut),
-                          const SizedBox(height: 20),
-                          Text(_headline, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)).animate().fadeIn(delay: 500.ms),
-                          const SizedBox(height: 8),
-                          Text(_subtitle, style: const TextStyle(color: AppTheme.textSecondaryColor), textAlign: TextAlign.center).animate().fadeIn(delay: 600.ms),
-                        ]),
+                                  Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    Text('${pct.round()}%', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.bold)),
+                                    const Text('Score', style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 14)),
+                                  ]),
+                                ],
+                              ),
+                            ).animate().scale(delay: 300.ms, duration: 600.ms, curve: Curves.elasticOut),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        Text(_headline, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)).animate().fadeIn(delay: 500.ms),
+                        const SizedBox(height: 8),
+                        Text(_subtitle, style: const TextStyle(color: AppTheme.textSecondaryColor), textAlign: TextAlign.center).animate().fadeIn(delay: 600.ms),
                       ],
                     ),
                   ),
@@ -142,29 +145,61 @@ class QuizResultsScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                           ),
-                          child: Row(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Text(w.questionText, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              const SizedBox(height: 16),
+                              
+                              // Your Answer Block
                               Container(
-                                width: 32, height: 32,
-                                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.15), shape: BoxShape.circle),
-                                child: const Icon(Icons.close, color: Colors.red, size: 18),
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.close, size: 14, color: AppTheme.errorColor),
+                                        const SizedBox(width: 6),
+                                        const Text('YOUR ANSWER', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.errorColor, letterSpacing: 0.5)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(w.userAnswer, style: const TextStyle(color: AppTheme.errorColor, fontSize: 14, height: 1.4)),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  Text(w.term, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                  const SizedBox(height: 4),
-                                  Row(children: [
-                                    const Text('Your answer: ', style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12)),
-                                    Flexible(child: Text(w.userAnswer, style: const TextStyle(color: AppTheme.errorColor, fontSize: 12, fontWeight: FontWeight.w600))),
-                                  ]),
-                                  const SizedBox(height: 2),
-                                  Row(children: [
-                                    const Text('Correct: ', style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12)),
-                                    Flexible(child: Text(w.correctAnswer, style: const TextStyle(color: AppTheme.successColor, fontSize: 12, fontWeight: FontWeight.w600))),
-                                  ]),
-                                ]),
+                              const SizedBox(height: 10),
+                              
+                              // Correct Answer Block
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.successColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.check, size: 14, color: AppTheme.successColor),
+                                        const SizedBox(width: 6),
+                                        const Text('CORRECT ANSWER', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.successColor, letterSpacing: 0.5)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(w.correctAnswer, style: const TextStyle(color: AppTheme.successColor, fontSize: 14, height: 1.4)),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

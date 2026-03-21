@@ -57,7 +57,7 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
   String? _error;
 
   // ── Setup config
-  String _quizType = 'MULTIPLE_CHOICE';
+  String _quizType = 'multiple_choice';
   int _questionCount = 10;
 
   // ── Quiz runtime state
@@ -85,7 +85,7 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
-  int get _timerMax => _quizType == 'FILL_BLANK' ? 30 : 20;
+  int get _timerMax => _quizType == 'fill_blank' ? 30 : 20;
 
   QuizQuestion? get _currentQ =>
       _quiz != null && _currentIndex < _quiz!.questions.length
@@ -202,7 +202,7 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
   void _recordAnswer(QuizQuestion q, String userAnswer,
       {bool isTimeout = false}) {
     _timer?.cancel();
-    final isCorrect = q.type == 'FILL_BLANK'
+    final isCorrect = q.type == 'fill_blank'
         ? _fuzzyMatch(userAnswer, q.correctAnswer)
         : userAnswer == q.correctAnswer;
 
@@ -297,14 +297,14 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
           const SizedBox(height: 12),
 
           for (final tp in [
-            ('MULTIPLE_CHOICE', 'Multiple Choice', Icons.list_outlined),
-            ('TRUE_FALSE', 'True / False', Icons.check_circle_outline),
-            ('FILL_BLANK', 'Fill in the Blank', Icons.edit_outlined),
+            ('multiple_choice', 'Multiple Choice', Icons.list_outlined),
+            ('true_false', 'True / False', Icons.check_circle_outline),
+            ('fill_blank', 'Fill in the Blank', Icons.edit_outlined),
           ])
             _TypeTile(
               label: tp.$2,
               icon: tp.$3,
-              subtitle: tp.$1 == 'FILL_BLANK' ? '30s per question' : '20s per question',
+              subtitle: tp.$1 == 'fill_blank' ? '30s per question' : '20s per question',
               isSelected: _quizType == tp.$1,
               onTap: () => setState(() => _quizType = tp.$1),
             ),
@@ -440,8 +440,8 @@ class _QuizChallengeScreenState extends State<QuizChallengeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         switch (q.type) {
-          'TRUE_FALSE' => _buildTrueFalseContent(q),
-          'FILL_BLANK' => _buildFillBlankContent(q),
+          'true_false' => _buildTrueFalseContent(q),
+          'fill_blank' => _buildFillBlankContent(q),
           _ => _buildMultiChoiceContent(q),
         },
       ],
