@@ -7,10 +7,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/sentence_models.dart';
 import '../../data/models/study_set_models.dart';
+import '../../data/repositories/ai_repository.dart';
+import '../../data/repositories/saved_sentence_repository.dart';
 import '../../data/repositories/study_set_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/sentence_picker_sheet.dart';
 
 // ── View mode enum ─────────────────────────────────────────────────────────
 
@@ -28,7 +32,13 @@ class StudySetDetailScreen extends StatefulWidget {
 
 class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
   late StudySetRepository _repo;
+  late AiRepository _aiRepo;
+  late SavedSentenceRepository _savedSentenceRepo;
   late Future<_StudySetData> _dataFuture;
+
+  /// Example sentences cached per term id for the life of this screen, so
+  /// reopening the picker for the same term costs no API call.
+  final Map<String, List<AiSentence>> _sentenceCache = {};
 
   // State
   _ViewMode _viewMode = _ViewMode.flashcard;
@@ -56,7 +66,10 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _repo = StudySetRepository(context.read<AuthService>());
+    final auth = context.read<AuthService>();
+    _repo = StudySetRepository(auth);
+    _aiRepo = AiRepository(auth);
+    _savedSentenceRepo = SavedSentenceRepository(auth);
     _dataFuture = _loadData();
   }
 
@@ -100,6 +113,22 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
   }
 
   void _toggleFlipOrder() => setState(() => _showTermFirst = !_showTermFirst);
+
+  Future<void> _openSentences(Term term) async {
+    final saved = await showSentencePickerSheet(
+      context: context,
+      termLabel: term.term,
+      cached: _sentenceCache[term.id],
+      onGenerate: () => _aiRepo.generateSentences(term: term.term),
+      onGenerated: (list) => _sentenceCache[term.id] = list,
+      onSave: (list) => _savedSentenceRepo.saveAll(list),
+    );
+    if (saved == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu câu ví dụ')),
+      );
+    }
+  }
 
   void _toggleLearned(Term current) {
     setState(() {
@@ -691,6 +720,7 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
                     key: ValueKey('${currentTerm.id}_$_showTermFirst'),
                     term: currentTerm,
                     showTermFirst: _showTermFirst,
+                    onSentences: () => _openSentences(currentTerm),
                   ).animate().fadeIn(duration: 180.ms)
                 : const SizedBox(),
           ),
@@ -816,6 +846,7 @@ class _StudySetDetailScreenState extends State<StudySetDetailScreen> {
         final t = terms[index];
         return _TermGridCard(
           term: t,
+          onSentences: () => _openSentences(t),
           onEdit: isOwner
               ? () async {
                   final result = await context.push<bool>('/study-set/${widget.studySetId}/term-edit', extra: t);
@@ -936,8 +967,14 @@ class _ToolbarButton extends StatelessWidget {
 class _FlashCard extends StatefulWidget {
   final Term term;
   final bool showTermFirst;
+  final VoidCallback? onSentences;
 
-  const _FlashCard({super.key, required this.term, required this.showTermFirst});
+  const _FlashCard({
+    super.key,
+    required this.term,
+    required this.showTermFirst,
+    this.onSentences,
+  });
 
   @override
   State<_FlashCard> createState() => _FlashCardState();
@@ -1012,7 +1049,8 @@ class _FlashCardState extends State<_FlashCard>
             child: _CardFace(label: frontLabel, text: frontText,
                 isBack: false,
                 ipa: widget.showTermFirst ? widget.term.ipa : null,
-                example: widget.showTermFirst ? null : widget.term.exampleSentence),
+                example: widget.showTermFirst ? null : widget.term.exampleSentence,
+                onSentences: widget.onSentences),
           ),
           // Back face
           AnimatedBuilder(
@@ -1041,9 +1079,15 @@ class _CardFace extends StatelessWidget {
   final String? ipa;
   final String? example;
   final bool isBack;
+  final VoidCallback? onSentences;
 
   const _CardFace(
-      {required this.label, required this.text, this.ipa, this.example, this.isBack = false});
+      {required this.label,
+      required this.text,
+      this.ipa,
+      this.example,
+      this.isBack = false,
+      this.onSentences});
 
   @override
   Widget build(BuildContext context) {
@@ -1126,6 +1170,27 @@ class _CardFace extends StatelessWidget {
               ),
             ),
           ),
+          // Example sentences, top-right. The card itself is the flip target,
+          // so this sits above it in the stack and swallows its own taps.
+          if (onSentences != null)
+            Positioned(
+              top: 10,
+              right: 12,
+              child: Material(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: onSentences,
+                  child: const SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: Icon(Icons.chat_bubble_outline,
+                        color: Colors.white, size: 18),
+                  ),
+                ),
+              ),
+            ),
           // Flip hint bottom-right
           Positioned(
             bottom: 16,
@@ -1155,10 +1220,12 @@ class _CardFace extends StatelessWidget {
 class _TermGridCard extends StatelessWidget {
   final Term term;
   final VoidCallback? onEdit;
+  final VoidCallback? onSentences;
 
   const _TermGridCard({
     required this.term,
     this.onEdit,
+    this.onSentences,
   });
 
   @override
@@ -1215,6 +1282,14 @@ class _TermGridCard extends StatelessWidget {
               ],
             ),
           ),
+          if (onSentences != null) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onSentences,
+              child: const Icon(Icons.chat_bubble_outline,
+                  color: AppTheme.textSecondaryColor, size: 20),
+            ),
+          ],
           if (onEdit != null) ...[
             const SizedBox(width: 8),
             GestureDetector(

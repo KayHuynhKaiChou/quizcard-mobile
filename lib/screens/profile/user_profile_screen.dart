@@ -110,7 +110,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       appBar: AppBar(
         title: const Text('Profile'),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/notifications'),
+          ),
           IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
         ],
         automaticallyImplyLeading: false,
@@ -174,6 +177,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 ],
               ).animate().fadeIn(delay: 200.ms),
+            ),
+            const SizedBox(height: 24),
+
+            // Menu
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColor,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                ),
+                child: Column(
+                  children: [
+                    ProfileMenuItem(
+                      icon: Icons.chat_bubble_outline,
+                      label: 'Câu đã lưu',
+                      onTap: () => context.push('/saved-sentences'),
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    ProfileMenuItem(
+                      icon: Icons.history,
+                      label: 'Lịch sử Quiz',
+                      onTap: () => context.push('/quiz-history'),
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    ProfileMenuItem(
+                      icon: Icons.notifications_outlined,
+                      label: 'Thông báo',
+                      onTap: () => context.push('/notifications'),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn(delay: 250.ms),
             ),
             const SizedBox(height: 24),
 

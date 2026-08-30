@@ -27,6 +27,7 @@ import '../screens/study_set/study_set_detail_screen.dart';
 import '../screens/study_set/create_study_set_screen.dart';
 import '../screens/decks/create_term_screen.dart';
 import '../screens/decks/flashcard_study_screen.dart';
+import '../screens/decks/saved_sentences_screen.dart';
 import '../data/models/study_set_models.dart';
 
 // Quiz screens
@@ -133,6 +134,10 @@ class AppRouter {
         GoRoute(
           path: '/quiz-history',
           builder: (c, s) => const QuizHistoryScreen(),
+        ),
+        GoRoute(
+          path: '/saved-sentences',
+          builder: (c, s) => const SavedSentencesScreen(),
         ),
         GoRoute(
           path: '/quiz-history/:id',

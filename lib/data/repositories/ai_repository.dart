@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:quizcard_mobile/data/models/sentence_models.dart';
 import 'package:quizcard_mobile/data/services/auth_service.dart';
 
 /// Repository for AI-powered features: generate terms, extract from text, usage.
@@ -26,9 +27,10 @@ class AiRepository {
     final response = await _authService.authenticatedPost(
       '/ai/generate-terms',
       body: {
-        'topic': topic,
+        'prompt': topic,
         'count': count,
-        'language': language,
+        'sourceLanguage': 'en',
+        'targetLanguage': language,
       },
     );
     if (response.statusCode == 200) {
@@ -51,5 +53,27 @@ class AiRepository {
       return List<Map<String, dynamic>>.from(data['terms'] ?? data);
     }
     throw Exception('Failed to extract terms');
+  }
+
+  /// Generate example sentences for a flashcard term. The raw term string is
+  /// sent as-is: it may hold several words separated by " - " and the prompt
+  /// splits them and divides the sentence count itself.
+  ///
+  /// Not metered against the daily AI limit.
+  Future<List<AiSentence>> generateSentences({
+    required String term,
+    int count = 10,
+  }) async {
+    final response = await _authService.authenticatedPost(
+      '/ai/generate-sentences',
+      body: {'term': term, 'count': count},
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return List<Map<String, dynamic>>.from(data['sentences'] ?? const [])
+          .map(AiSentence.fromJson)
+          .toList();
+    }
+    throw Exception('Failed to generate sentences');
   }
 }
